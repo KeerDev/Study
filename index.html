@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study sprint tracker</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg2: #f5f4f0;
+    --bg3: #eeede9;
+    --text: #1a1a18;
+    --text2: #6b6b68;
+    --text3: #9e9e9a;
+    --border: rgba(0,0,0,0.12);
+    --border2: rgba(0,0,0,0.22);
+    --green-bg: #EAF3DE;
+    --green-text: #27500A;
+    --green-accent: #639922;
+    --red-bg: #FCEBEB;
+    --red-text: #791F1F;
+    --blue-accent: #185FA5;
+    --blue-bg: #E6F1FB;
+    --blue-text: #0C447C;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a;
+      --bg2: #252523;
+      --bg3: #2e2e2b;
+      --text: #e8e8e4;
+      --text2: #9e9e9a;
+      --text3: #6b6b68;
+      --border: rgba(255,255,255,0.1);
+      --border2: rgba(255,255,255,0.18);
+      --green-bg: #173404;
+      --green-text: #C0DD97;
+      --green-accent: #639922;
+      --red-bg: #501313;
+      --red-text: #F7C1C1;
+      --blue-accent: #378ADD;
+      --blue-bg: #042C53;
+      --blue-text: #B5D4F4;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .page { max-width: 860px; margin: 0 auto; }
+
+  h1 {
+    font-size: 22px; font-weight: 500;
+    text-align: center; margin-bottom: 4px;
+    color: var(--text);
+  }
+  .subtitle {
+    text-align: center; font-size: 13px;
+    color: var(--text2); margin-bottom: 1.5rem;
+  }
+
+  .progress-wrap {
+    background: var(--bg2);
+    border-radius: 8px; height: 8px;
+    overflow: hidden;
+    border: 0.5px solid var(--border);
+    margin-bottom: 6px;
+  }
+  .progress-fill {
+    height: 100%; background: var(--green-accent);
+    border-radius: 8px; transition: width 0.3s;
+    width: 0%;
+  }
+  .progress-label {
+    font-size: 12px; color: var(--text2);
+    text-align: right; margin-bottom: 1.5rem;
+  }
+
+  .legend {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    justify-content: center; margin-bottom: 1.5rem;
+    font-size: 12px; color: var(--text2);
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  .day-section { margin-bottom: 1.25rem; }
+
+  .day-header {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px;
+  }
+  .day-name {
+    font-size: 12px; font-weight: 500;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--text2);
+  }
+  .day-avail {
+    font-size: 11px;
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    color: var(--text2);
+  }
+
+  .track-row {
+    display: flex;
+    border-radius: var(--radius);
+    border: 0.5px solid var(--border);
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .task-block {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    padding: 10px 6px 8px;
+    border-right: 0.5px solid var(--border);
+    cursor: pointer;
+    transition: background 0.12s;
+    min-width: 0;
+    user-select: none;
+    position: relative;
+  }
+  .task-block:last-child { border-right: none; }
+  .task-block:hover { background: var(--bg2); }
+  .task-block.priority { border-top: 2.5px solid var(--blue-accent); }
+  .task-block.done { background: var(--green-bg); }
+  .task-block.skipped { background: var(--red-bg); }
+
+  .status-icon {
+    width: 18px; height: 18px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 500;
+    margin-bottom: 5px; flex-shrink: 0;
+    visibility: hidden;
+  }
+  .task-block.done .status-icon { visibility: visible; background: var(--green-accent); color: #fff; }
+  .task-block.skipped .status-icon { visibility: visible; background: #E24B4A; color: #fff; }
+
+  .task-name {
+    font-size: 11px; font-weight: 500;
+    text-align: center; line-height: 1.3;
+    color: var(--text); word-break: break-word;
+  }
+  .task-block.done .task-name { color: var(--green-text); }
+  .task-block.skipped .task-name { color: var(--red-text); }
+
+  .task-time {
+    font-size: 10px; color: var(--text3);
+    margin-top: 3px; text-align: center;
+    line-height: 1.3;
+  }
+  .task-block.done .task-time { color: var(--green-accent); }
+
+  .priority-badge {
+    font-size: 9px; font-weight: 500; letter-spacing: 0.05em;
+    background: var(--blue-bg); color: var(--blue-text);
+    border-radius: 3px; padding: 1px 5px;
+    margin-top: 4px;
+  }
+
+  .rest-row {
+    display: flex; align-items: center; justify-content: center;
+    height: 48px;
+    border-radius: var(--radius);
+    border: 0.5px dashed var(--border2);
+    color: var(--text3); font-size: 12px;
+    letter-spacing: 0.04em;
+  }
+
+  .edit-panel {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .edit-panel h2 {
+    font-size: 14px; font-weight: 500;
+    color: var(--text); margin-bottom: 1rem;
+  }
+  .edit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 10px;
+  }
+  .edit-row {
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .edit-row label {
+    font-size: 11px; color: var(--text2); font-weight: 500;
+  }
+  .edit-row input {
+    font-size: 12px;
+    padding: 6px 8px;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.12s;
+  }
+  .edit-row input:focus { border-color: var(--blue-accent); }
+
+  .btn-row {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-top: 1rem; align-items: center;
+  }
+  button {
+    font-size: 13px; padding: 8px 16px;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-sm);
+    background: var(--bg); color: var(--text);
+    cursor: pointer; transition: background 0.12s;
+    font-family: inherit;
+  }
+  button:hover { background: var(--bg3); }
+  button.primary {
+    background: var(--blue-accent); color: #fff;
+    border-color: var(--blue-accent);
+  }
+  button.primary:hover { opacity: 0.88; }
+  button.danger { color: #E24B4A; border-color: #E24B4A; }
+  button.danger:hover { background: var(--red-bg); }
+
+  .toggle-edit {
+    text-align: center; margin-bottom: 1rem;
+  }
+  .hint {
+    text-align: center; font-size: 11px;
+    color: var(--text3); margin-top: 2rem;
+    border-top: 0.5px solid var(--border);
+    padding-top: 1rem;
+  }
+
+  .divider {
+    border: none; border-top: 0.5px solid var(--border);
+    margin: 1.5rem 0;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Study sprint tracker</h1>
+  <p class="subtitle">Two weeks to done &nbsp;·&nbsp; click a task to cycle status</p>
+
+  <div class="progress-wrap"><div class="progress-fill" id="progbar"></div></div>
+  <div class="progress-label" id="proglabel">0 / 17 tasks</div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#639922"></div> done</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#E24B4A"></div> skipped</div>
+    <div class="legend-item">
+      <div style="width:10px;height:3px;background:#185FA5;border-radius:1px;margin-top:1px"></div>
+      priority
+    </div>
+  </div>
+
+  <div class="toggle-edit">
+    <button onclick="toggleEdit()" id="editBtn">Edit times &amp; names</button>
+  </div>
+
+  <div class="edit-panel" id="editPanel" style="display:none">
+    <h2>Edit task names &amp; times</h2>
+    <div class="edit-grid" id="editGrid"></div>
+    <div class="btn-row">
+      <button class="primary" onclick="applyEdits()">Apply changes</button>
+      <button onclick="toggleEdit()">Close</button>
+      <button class="danger" onclick="resetAll()">Reset all progress</button>
+      <button class="primary" onclick="downloadHTML()" style="margin-left:auto">Download HTML file</button>
+    </div>
+  </div>
+
+  <div id="schedule"></div>
+
+  <hr class="divider">
+  <div class="btn-row" style="justify-content:center">
+    <button class="primary" onclick="downloadHTML()">Download updated file</button>
+    <button class="danger" onclick="resetAll()">Reset all progress</button>
+  </div>
+
+  <p class="hint">Click once = done &nbsp;·&nbsp; twice = skipped &nbsp;·&nbsp; third click = reset</p>
+</div>
+
+<script>
+const DEFAULT_DAYS = [
+  {
+    label: "Friday", avail: "6:00 – 9:00 pm", rest: false,
+    tasks: [
+      { id: "pe-hw-1", name: "PE-HW part 1", time: "6:00 – 9:00 pm", hours: "3h", priority: true }
+    ]
+  },
+  {
+    label: "Saturday", avail: "All day", rest: false,
+    tasks: [
+      { id: "pe-hw-2", name: "PE-HW finish",  time: "9:00 – 10:00 am", hours: "1h", priority: true },
+      { id: "pe-6",    name: "PE-6",           time: "10:00 am – 2:00 pm", hours: "4h", priority: true },
+      { id: "pb-5-1",  name: "PB-5 start",     time: "3:00 – 6:00 pm", hours: "3h", priority: false }
+    ]
+  },
+  {
+    label: "Sunday", avail: "All day", rest: false,
+    tasks: [
+      { id: "pb-5-2",      name: "PB-5 finish",     time: "9:00 – 10:00 am", hours: "1h", priority: false },
+      { id: "pb-6",        name: "PB-6",             time: "10:00 am – 2:00 pm", hours: "4h", priority: false },
+      { id: "panel-ch2-1", name: "Panel Ch2 start",  time: "3:00 – 6:00 pm", hours: "3h", priority: false }
+    ]
+  },
+  {
+    label: "Monday", avail: "3:30 pm onwards", rest: false,
+    tasks: [
+      { id: "panel-ch2-2", name: "Panel Ch2 finish", time: "3:30 – 4:30 pm", hours: "1h", priority: false },
+      { id: "panel-ch3",   name: "Panel Ch3",        time: "4:30 – 8:30 pm", hours: "4h", priority: false }
+    ]
+  },
+  {
+    label: "Tue / Wed", avail: "Rest days", rest: true,
+    tasks: []
+  },
+  {
+    label: "Thursday", avail: "All day", rest: false,
+    tasks: [
+      { id: "dev2",  name: "Dev 2",       time: "9:00 – 11:00 am", hours: "2h", priority: false },
+      { id: "dev3",  name: "Dev 3",       time: "11:00 am – 1:00 pm", hours: "2h", priority: false },
+      { id: "dev4",  name: "Dev 4",       time: "2:00 – 4:00 pm", hours: "2h", priority: false },
+      { id: "dev5",  name: "Dev 5",       time: "4:00 – 6:00 pm", hours: "2h", priority: false },
+      { id: "pb7-1", name: "PB-7 start",  time: "6:30 – 8:30 pm", hours: "2h", priority: false }
+    ]
+  },
+  {
+    label: "Friday", avail: "6:00 – 9:00 pm · Week 2", rest: false,
+    tasks: [
+      { id: "pb7-2", name: "PB-7 finish", time: "6:00 – 7:00 pm", hours: "1h", priority: false },
+      { id: "pb8-1", name: "PB-8 start",  time: "7:00 – 9:00 pm", hours: "2h", priority: false }
+    ]
+  },
+  {
+    label: "Saturday", avail: "All day · Week 2", rest: false,
+    tasks: [
+      { id: "pb8-2", name: "PB-8 finish", time: "9:00 – 10:00 am", hours: "1h", priority: false },
+      { id: "pe-7",  name: "PE-7",        time: "10:00 am – 2:00 pm", hours: "4h", priority: false },
+      { id: "pe8-1", name: "PE-8 start",  time: "3:00 – 6:00 pm", hours: "3h", priority: false }
+    ]
+  },
+  {
+    label: "Sunday", avail: "All day · Week 2", rest: false,
+    tasks: [
+      { id: "pe8-2", name: "PE-8 finish", time: "9:00 – 10:00 am", hours: "1h", priority: false },
+      { id: "pe-9",  name: "PE-9",        time: "10:00 am – 2:00 pm", hours: "4h", priority: false }
+    ]
+  }
+];
+
+let days = JSON.parse(JSON.stringify(DEFAULT_DAYS));
+let taskState = {};
+const TOTAL = days.reduce((a, d) => a + d.tasks.length, 0);
+
+function getState(id) { return taskState[id] || 0; }
+function cycleState(id) {
+  taskState[id] = (getState(id) + 1) % 3;
+  saveState(); render();
+}
+
+function saveState() {
+  try { localStorage.setItem('racetrack_state', JSON.stringify(taskState)); } catch(e) {}
+  try { localStorage.setItem('racetrack_days', JSON.stringify(days)); } catch(e) {}
+}
+function loadState() {
+  try {
+    const s = localStorage.getItem('racetrack_state');
+    if (s) taskState = JSON.parse(s);
+    const d = localStorage.getItem('racetrack_days');
+    if (d) days = JSON.parse(d);
+  } catch(e) {}
+}
+
+function updateProgress() {
+  const done = Object.values(taskState).filter(v => v === 1).length;
+  const pct = Math.round((done / TOTAL) * 100);
+  document.getElementById('progbar').style.width = pct + '%';
+  document.getElementById('proglabel').textContent = done + ' / ' + TOTAL + ' tasks done (' + pct + '%)';
+}
+
+function render() {
+  updateProgress();
+  const wrap = document.getElementById('schedule');
+  wrap.innerHTML = '';
+  days.forEach(day => {
+    const sec = document.createElement('div');
+    sec.className = 'day-section';
+
+    const hdr = document.createElement('div');
+    hdr.className = 'day-header';
+    hdr.innerHTML = '<span class="day-name">' + day.label + '</span>' +
+                    '<span class="day-avail">' + day.avail + '</span>';
+    sec.appendChild(hdr);
+
+    if (day.rest) {
+      const rb = document.createElement('div');
+      rb.className = 'rest-row';
+      rb.textContent = 'rest — recharge';
+      sec.appendChild(rb);
+    } else {
+      const row = document.createElement('div');
+      row.className = 'track-row';
+      day.tasks.forEach(t => {
+        const blk = document.createElement('div');
+        blk.className = 'task-block' + (t.priority ? ' priority' : '');
+        const s = getState(t.id);
+        if (s === 1) blk.classList.add('done');
+        if (s === 2) blk.classList.add('skipped');
+
+        const icon = document.createElement('div');
+        icon.className = 'status-icon';
+        icon.textContent = s === 1 ? '✓' : (s === 2 ? '✕' : '');
+
+        const nm = document.createElement('div');
+        nm.className = 'task-name';
+        nm.textContent = t.name;
+
+        const tm = document.createElement('div');
+        tm.className = 'task-time';
+        tm.textContent = t.time;
+
+        blk.appendChild(icon);
+        blk.appendChild(nm);
+        blk.appendChild(tm);
+
+        if (t.priority) {
+          const badge = document.createElement('div');
+          badge.className = 'priority-badge';
+          badge.textContent = 'priority';
+          blk.appendChild(badge);
+        }
+        blk.addEventListener('click', () => cycleState(t.id));
+        row.appendChild(blk);
+      });
+      sec.appendChild(row);
+    }
+    wrap.appendChild(sec);
+  });
+}
+
+let editOpen = false;
+function toggleEdit() {
+  editOpen = !editOpen;
+  document.getElementById('editPanel').style.display = editOpen ? 'block' : 'none';
+  document.getElementById('editBtn').textContent = editOpen ? 'Close editor' : 'Edit times & names';
+  if (editOpen) buildEditGrid();
+}
+
+function buildEditGrid() {
+  const grid = document.getElementById('editGrid');
+  grid.innerHTML = '';
+  days.forEach((day, di) => {
+    day.tasks.forEach((t, ti) => {
+      const row = document.createElement('div');
+      row.className = 'edit-row';
+      row.innerHTML =
+        '<label>' + day.label + ' — task ' + (ti+1) + '</label>' +
+        '<input type="text" placeholder="Name" value="' + escHtml(t.name) + '" data-di="' + di + '" data-ti="' + ti + '" data-field="name">' +
+        '<input type="text" placeholder="Time (e.g. 6:00 – 9:00 pm)" value="' + escHtml(t.time) + '" data-di="' + di + '" data-ti="' + ti + '" data-field="time">';
+      grid.appendChild(row);
+    });
+  });
+}
+
+function applyEdits() {
+  document.querySelectorAll('#editGrid input').forEach(inp => {
+    const di = +inp.dataset.di, ti = +inp.dataset.ti, field = inp.dataset.field;
+    days[di].tasks[ti][field] = inp.value;
+  });
+  saveState(); render();
+  toggleEdit();
+}
+
+function resetAll() {
+  if (!confirm('Reset all progress? Task names and times will be kept.')) return;
+  taskState = {};
+  saveState(); render();
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+
+function downloadHTML() {
+  const snap = document.documentElement.cloneNode(true);
+  const inlineScript = snap.querySelector('#inlineData');
+  if (inlineScript) inlineScript.remove();
+  const injected = snap.querySelector('script[data-injected]');
+  if (injected) injected.remove();
+
+  const dataScript = document.createElement('script');
+  dataScript.setAttribute('data-injected','');
+  dataScript.textContent =
+    'window.__SAVED_STATE__ = ' + JSON.stringify(taskState) + ';\n' +
+    'window.__SAVED_DAYS__ = ' + JSON.stringify(days) + ';';
+  snap.querySelector('body').insertBefore(dataScript, snap.querySelector('body').firstChild);
+
+  const mainScript = snap.querySelector('body script:last-of-type');
+  if (mainScript) {
+    mainScript.textContent = mainScript.textContent
+      .replace('loadState();', 'loadState(); if(window.__SAVED_STATE__) taskState=window.__SAVED_STATE__; if(window.__SAVED_DAYS__) days=window.__SAVED_DAYS__;');
+  }
+
+  const html = '<!DOCTYPE html>\n' + snap.outerHTML;
+  const blob = new Blob([html], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'study_racetrack.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+loadState();
+render();
+</script>
+</body>
+</html>

@@ -554,20 +554,21 @@ function build(data) {
   const subLayer     = root.append("g").attr("class","sub-layer");
   const labelLayer   = root.append("g").attr("class","label-layer");
 
-  // helpers for stroke / marker colour selection
-  const linkInvolvesExt = l => (l.sourceNode||l.source).core === false || (l.targetNode||l.target).core === false;
+  // helpers for stroke / marker colour selection — links use the same
+  // blue/green palette regardless of whether one end is external. The
+  // dashed style on sub-links is what differentiates them.
   const baseStroke = l => {
-    if (linkInvolvesExt(l))                                            return "rgba(139,132,122,0.55)";
-    if (mutualSet.has((l.sourceNode||l.source).id+"→"+(l.targetNode||l.target).id) ||
-        mutualSet.has((l.targetNode||l.target).id+"→"+(l.sourceNode||l.source).id))
-                                                                        return "rgba(46,125,79,0.55)";
+    const sId = (l.sourceNode||l.source).id;
+    const tId = (l.targetNode||l.target).id;
+    if (mutualSet.has(sId+"→"+tId) || mutualSet.has(tId+"→"+sId))
+      return "rgba(46,125,79,0.55)";
     return "rgba(44,79,130,0.55)";
   };
   const baseMarker = l => {
-    if (linkInvolvesExt(l)) return "url(#arr-ext)";
-    if (mutualSet.has((l.sourceNode||l.source).id+"→"+(l.targetNode||l.target).id) ||
-        mutualSet.has((l.targetNode||l.target).id+"→"+(l.sourceNode||l.source).id))
-                            return "url(#arr-green)";
+    const sId = (l.sourceNode||l.source).id;
+    const tId = (l.targetNode||l.target).id;
+    if (mutualSet.has(sId+"→"+tId) || mutualSet.has(tId+"→"+sId))
+      return "url(#arr-green)";
     return "url(#arr-blue)";
   };
 

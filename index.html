@@ -3,699 +3,1024 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Joking Relations — Burkina Faso (Focused)</title>
+<title>Joking Relations — Burkina Faso</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@300;400;600&family=Inter:wght@300;400;500;600&display=swap');
 
 :root {
-  --bg: #f9f6f0;
-  --surface: #ffffff;
-  --border: #d8d0c4;
-  --text: #1c1814;
-  --muted: #857d74;
-  --accent: #1a3a5c;
-  --accent2: #8b3a2e;
-  --link-main: rgba(26,58,92,0.5);
-  --link-mutual: rgba(46,110,60,0.6);
-  --node-fill: #eef2f8;
-  --node-str: #1a3a5c;
-  --sub-fill: #faf0ed;
-  --sub-str: #8b3a2e;
-  --sub-line: #c9856e;
-  --panel-w: 340px;
+  --bg:         #f7f5f2;
+  --surface:    #ffffff;
+  --surface2:   #f0ede8;
+  --border:     #d0cbc4;
+  --border2:    #e5e0da;
+  --text:       #1a1714;
+  --muted:      #7a7570;
+  --accent:     #2c4f82;
+  --accent-lt:  #dce6f5;
+  --sub-col:    #b8531e;
+  --sub-fill:   #fde4d3;
+  --sub-fill2:  #fbd2b6;
+  --link-col:   rgba(44,79,130,0.35);
+  --link-hi:    #2c4f82;
+  --green:      #2e7d4f;
+  --green-lt:   rgba(46,125,79,0.4);
+  --node-fill:  #edf2fa;
+  --node-str:   #2c4f82;
+  --sub-link:   rgba(184,83,30,0.55);
+  --sub-link-hi:#b8531e;
 }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  height: 100vh; width: 100vw; overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  overflow: hidden;
+  height: 100vh; width: 100vw;
 }
 
 /* ── HEADER ── */
-#hdr {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+#header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 11px 20px 9px;
   background: var(--surface);
-  border-bottom: 1.5px solid var(--border);
-  padding: 10px 18px;
-  display: flex; align-items: baseline; gap: 16px;
+  border-bottom: 1px solid var(--border2);
+  display: flex; align-items: baseline; gap: 14px;
+  pointer-events: none;
 }
-#hdr h1 {
-  font-family: 'Playfair Display', serif;
-  font-size: 16px; font-weight: 700; color: var(--accent);
-  letter-spacing: 0.01em;
+#header h1 {
+  font-family: 'Source Serif 4', serif; font-weight: 600; font-size: 16px;
+  color: var(--text);
 }
-#hdr .sub { font-size: 11px; color: var(--muted); }
-#hdr .badge {
-  margin-left: auto;
-  font-size: 10px; background: var(--accent);
-  color: #fff; border-radius: 4px;
-  padding: 3px 9px; letter-spacing: 0.05em; font-weight: 500;
-}
+#subtitle { font-size: 11.5px; color: var(--muted); }
 
 /* ── CONTROLS ── */
-#ctrl {
-  position: fixed; top: 8px; right: 16px; z-index: 300;
-  display: flex; align-items: center; gap: 8px;
+#controls {
+  position: fixed; top: 8px; right: 16px; z-index: 200;
+  display: flex; align-items: center; gap: 7px;
 }
-.clabel { font-size: 10px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; }
-.tg { display: flex; border: 1px solid var(--border); border-radius: 5px; overflow: hidden; }
-.tb {
-  background: var(--surface); border: none; color: var(--muted);
-  font-size: 10px; padding: 4px 10px; cursor: pointer;
-  font-family: 'DM Sans', sans-serif; font-weight: 500;
-  transition: all 0.1s;
+.ctrl-label {
+  font-size: 10px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.07em; font-weight: 500;
 }
-.tb:hover { background: #f0ece6; color: var(--text); }
-.tb.on { background: var(--accent); color: #fff; }
+.toggle-group {
+  display: flex;
+  border: 1px solid var(--border); border-radius: 5px; overflow: hidden;
+}
+.tbtn {
+  background: var(--surface); border: none;
+  color: var(--muted); font-family: 'Inter', sans-serif;
+  font-size: 10px; padding: 4px 9px; cursor: pointer;
+  transition: all 0.12s; letter-spacing: 0.04em; font-weight: 500;
+}
+.tbtn:hover { color: var(--text); background: var(--surface2); }
+.tbtn.on { background: var(--accent); color: #fff; }
 
-/* ── BOTTOM BAR ── */
-#bar {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
-  background: var(--surface); border-top: 1px solid var(--border);
-  padding: 6px 18px; display: flex; align-items: center; gap: 20px;
+/* ── INTERACTION HINT BAR ── */
+#modebar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: var(--surface); border-top: 1px solid var(--border2);
+  padding: 7px 18px; display: flex; align-items: center; gap: 18px;
   font-size: 11px; color: var(--muted);
 }
-#bar strong { color: var(--accent); }
-#bar-status { margin-left: auto; color: var(--accent); font-size: 11px; font-weight: 500; }
-#bar-status span { color: var(--muted); font-weight: 400; }
+#modebar strong { color: var(--accent); font-weight: 600; }
+#mode-status { margin-left: auto; color: var(--accent); font-weight: 500; font-size: 11px; }
+#mode-status span { color: var(--muted); font-weight: 400; }
 #clear-btn {
-  background: none; border: 1px solid var(--border); border-radius: 4px;
-  padding: 3px 9px; font-size: 10px; color: var(--muted); cursor: pointer;
-  font-family: 'DM Sans', sans-serif; display: none;
+  background: none; border: 1px solid var(--border);
+  border-radius: 4px; padding: 3px 9px; font-size: 10px;
+  font-family: 'Inter', sans-serif; color: var(--muted); cursor: pointer;
+  display: none;
 }
-#clear-btn:hover { background: #f0ece6; }
+#clear-btn:hover { background: var(--surface2); color: var(--text); }
 #clear-btn.show { display: inline-block; }
 
-/* ── LEGEND ── */
-#legend {
-  position: fixed; bottom: 44px; left: 14px; z-index: 100;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 8px; padding: 10px 13px; display: flex; flex-direction: column; gap: 6px;
+/* ── SVG NODES ── */
+.ethnic-ring {
+  stroke-width: 1.6px; cursor: pointer;
+  transition: stroke-width 0.12s, filter 0.12s;
 }
-.lt { font-size: 9px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 2px; }
-.li { display: flex; align-items: center; gap: 8px; font-size: 10.5px; color: var(--muted); }
-.lc { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--node-str); background: var(--node-fill); flex-shrink: 0; }
-.lc.sub { border-color: var(--sub-str); border-style: dashed; background: var(--sub-fill); width: 11px; height: 11px; }
-.ll { width: 28px; height: 2px; background: var(--link-main); position: relative; flex-shrink: 0; }
-.ll::after { content: ''; position: absolute; right: -1px; top: -3px; border-left: 8px solid var(--link-main); border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
-.ll.mut { background: var(--link-mutual); }
-.ll.mut::after { border-left-color: var(--link-mutual); }
-.lsl { width: 28px; height: 1px; background: var(--sub-line); border-top: 2px dashed var(--sub-line); flex-shrink: 0; }
+.ethnic-ring:hover { stroke-width: 2.5px; }
+.ethnic-ring.selected { stroke-width: 3px; filter: drop-shadow(0 0 6px rgba(44,79,130,0.5)); }
+.ethnic-ring.dim { opacity: 0.18; }
 
-/* ── SVG ── */
-svg { position: fixed; top: 40px; left: 0; right: 0; bottom: 38px; }
+.sub-circle {
+  stroke-width: 1.8px;
+  cursor: pointer;
+  transition: stroke-width 0.12s, filter 0.12s;
+}
+.sub-circle:hover { stroke-width: 2.6px; }
+.sub-circle.selected { stroke-width: 3.5px; filter: drop-shadow(0 0 6px rgba(184,83,30,0.6)); }
+.sub-circle.dim { opacity: 0.18; }
 
-/* node rings */
-.eth-ring { stroke-width: 1.8px; cursor: pointer; transition: stroke-width 0.12s, opacity 0.2s; fill: var(--node-fill); stroke: var(--node-str); }
-.eth-ring:hover { stroke-width: 3px; }
-.eth-ring.sel { stroke-width: 3.5px; filter: drop-shadow(0 0 8px rgba(26,58,92,0.45)); }
-.eth-ring.dim { opacity: 0.12; }
+.sub-tether {
+  stroke: var(--sub-col); stroke-width: 0.9px;
+  stroke-dasharray: 2 2; opacity: 0.55;
+  fill: none; pointer-events: none;
+}
+.sub-tether.dim { opacity: 0.1; }
 
-.sub-ring { stroke-width: 1.5px; stroke-dasharray: 5 3; cursor: pointer; transition: stroke-width 0.12s, opacity 0.2s; fill: var(--sub-fill); stroke: var(--sub-str); }
-.sub-ring:hover { stroke-width: 2.5px; }
-.sub-ring.sel { stroke-width: 3px; filter: drop-shadow(0 0 6px rgba(139,58,46,0.4)); }
-.sub-ring.dim { opacity: 0.12; }
+.sub-label-text {
+  font-family: 'Inter', sans-serif; font-weight: 600;
+  pointer-events: none; text-anchor: middle; dominant-baseline: central;
+  fill: var(--sub-col);
+}
+.sub-label-text.dim { opacity: 0.15; }
 
-/* labels */
-.eth-lbl { font-family: 'Playfair Display', serif; font-weight: 600; text-anchor: middle; dominant-baseline: central; pointer-events: none; fill: var(--accent); }
-.eth-lbl.dim { opacity: 0.1; }
-.eth-cnt { font-family: 'DM Sans', sans-serif; text-anchor: middle; pointer-events: none; fill: var(--muted); }
-.eth-cnt.dim { opacity: 0.1; }
-.sub-lbl { font-family: 'DM Sans', sans-serif; font-weight: 500; text-anchor: middle; dominant-baseline: central; pointer-events: none; fill: var(--sub-str); }
-.sub-lbl.dim { opacity: 0.1; }
+.eth-label {
+  font-family: 'Source Serif 4', serif; font-weight: 600;
+  text-anchor: middle; dominant-baseline: central;
+  pointer-events: none; fill: var(--accent);
+}
+.eth-label.dim { opacity: 0.15; }
 
-/* subgroup connector line */
-.sub-connector { stroke: var(--sub-line); stroke-width: 1.5px; stroke-dasharray: 5 3; fill: none; pointer-events: none; opacity: 0.7; transition: opacity 0.2s; }
-.sub-connector.dim { opacity: 0.05; }
+.eth-count {
+  font-family: 'Inter', sans-serif; font-weight: 400;
+  text-anchor: middle; pointer-events: none; fill: var(--muted);
+}
+.eth-count.dim { opacity: 0.15; }
 
-/* joking links */
-.jlink { fill: none; cursor: pointer; transition: opacity 0.15s; }
-.jlink.faded { opacity: 0.07; }
-.jlink.visible { opacity: 1; }
-.jlink.dim { opacity: 0 !important; pointer-events: none; }
-.jhit { fill: none; stroke: transparent; stroke-width: 14px; cursor: pointer; }
-.jhit.dim { pointer-events: none; }
-.wlbl { font-size: 9px; font-family: 'DM Sans', sans-serif; font-weight: 600; pointer-events: none; }
+.pat-dot { cursor: default; transition: opacity 0.1s; pointer-events: none; }
+.pat-dot.dim { opacity: 0.05 !important; }
+
+/* ── SVG LINKS ── */
+.link {
+  fill: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.link.dim { opacity: 0.0 !important; pointer-events: none; }
+.link.faded { opacity: 0.10; }
+.link.visible { opacity: 1; }
+
+.link-hitarea {
+  fill: none; stroke: transparent; stroke-width: 14px; cursor: pointer;
+}
+.link-hitarea.dim { pointer-events: none; }
+
+.wlabel {
+  font-size: 9px; font-family: 'Inter', sans-serif; font-weight: 600;
+  pointer-events: none;
+}
 
 /* ── SIDE PANEL ── */
 #panel {
-  position: fixed; right: 0; top: 40px; bottom: 38px; width: var(--panel-w);
-  z-index: 300; background: var(--surface); border-left: 1px solid var(--border);
-  display: none; flex-direction: column; box-shadow: -4px 0 20px rgba(0,0,0,0.08);
+  position: fixed; right: 0; top: 40px; bottom: 38px;
+  width: 380px; z-index: 300;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  display: none; flex-direction: column;
+  box-shadow: -3px 0 18px rgba(0,0,0,0.07);
 }
 #panel.open { display: flex; }
-#ph { padding: 14px 16px 11px; border-bottom: 1px solid #eee; background: #f9f6f0; flex-shrink: 0; }
-#pc { float: right; background: none; border: none; font-size: 18px; cursor: pointer; color: var(--muted); line-height: 1; margin: -2px -2px 0 0; }
-#pc:hover { color: var(--text); }
-#pt { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 14px; color: var(--accent); margin-bottom: 5px; padding-right: 24px; }
-#pm { font-size: 11.5px; color: var(--muted); line-height: 1.7; }
-#pm em { color: var(--text); font-style: normal; font-weight: 500; }
-.mbadge { display: inline-block; background: #e8f5ee; color: #2e7d4f; border: 1px solid #b5dfc6; border-radius: 4px; font-size: 10px; font-weight: 600; padding: 1px 7px; margin-left: 6px; }
-.sbadge { display: inline-block; background: #fdf0ed; color: var(--sub-str); border: 1px solid #e8b5a6; border-radius: 4px; font-size: 10px; font-weight: 600; padding: 1px 7px; }
+#panel-head {
+  padding: 14px 16px 11px;
+  border-bottom: 1px solid var(--border2);
+  background: var(--surface2);
+  flex-shrink: 0;
+}
+#panel-close {
+  float: right; background: none; border: none;
+  font-size: 17px; cursor: pointer; color: var(--muted); line-height: 1;
+  margin: -2px -2px 0 0;
+}
+#panel-close:hover { color: var(--text); }
+#panel-title {
+  font-family: 'Source Serif 4', serif; font-weight: 600;
+  font-size: 14px; color: var(--accent); margin-bottom: 5px;
+  padding-right: 24px;
+}
+#panel-meta { font-size: 11.5px; color: var(--muted); line-height: 1.7; }
+#panel-meta em { color: var(--text); font-style: normal; font-weight: 500; }
+#panel-meta .mutual-badge {
+  display: inline-block;
+  background: #e8f5ee; color: var(--green); border: 1px solid #b5dfc6;
+  border-radius: 4px; font-size: 10px; font-weight: 600;
+  padding: 1px 7px; margin-left: 6px; vertical-align: middle;
+}
 
-#ptabs { display: flex; flex-shrink: 0; border-bottom: 1px solid #eee; }
-.ptab { flex: 1; padding: 8px 4px; text-align: center; font-size: 11px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; background: none; border-top: none; border-left: none; border-right: none; font-family: 'DM Sans', sans-serif; transition: all 0.1s; }
+/* Tab bar */
+#panel-tabs {
+  display: flex; flex-shrink: 0;
+  border-bottom: 1px solid var(--border2);
+  background: var(--surface);
+}
+.ptab {
+  flex: 1; padding: 8px 4px; text-align: center;
+  font-size: 11px; font-weight: 500; color: var(--muted);
+  cursor: pointer; border-bottom: 2px solid transparent;
+  transition: all 0.12s; background: none; border-top: none;
+  border-left: none; border-right: none; font-family: 'Inter', sans-serif;
+}
 .ptab:hover { color: var(--text); }
 .ptab.active { color: var(--accent); border-bottom-color: var(--accent); }
 .ptab.hidden { display: none; }
 
-#pb { flex: 1; overflow-y: auto; }
-.ptable { width: 100%; border-collapse: collapse; font-size: 11.5px; }
-.ptable thead th { position: sticky; top: 0; background: #f9f6f0; border-bottom: 2px solid var(--border); padding: 7px 12px; text-align: left; font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
-.ptable tbody tr { border-bottom: 1px solid #f0ece6; }
+#panel-body { flex: 1; overflow-y: auto; }
+
+/* Table */
+.ptable {
+  width: 100%; border-collapse: collapse; font-size: 11.5px;
+}
+.ptable thead th {
+  position: sticky; top: 0; background: var(--surface2);
+  border-bottom: 2px solid var(--border);
+  padding: 7px 13px; text-align: left;
+  font-size: 10px; font-weight: 600; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.07em;
+}
+.ptable tbody tr { border-bottom: 1px solid var(--border2); }
 .ptable tbody tr:last-child { border-bottom: none; }
-.ptable tbody tr:hover { background: #f9f6f0; }
-.ptable tbody td { padding: 6px 12px; color: var(--text); line-height: 1.4; }
+.ptable tbody tr:hover { background: var(--surface2); }
+.ptable tbody td {
+  padding: 6px 13px; color: var(--text); line-height: 1.4;
+}
 .ptable td.num { color: var(--muted); font-size: 10.5px; width: 32px; }
 
-/* ── TOOLTIP ── */
-#tip { position: fixed; z-index: 500; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 9px 13px; pointer-events: none; opacity: 0; transition: opacity 0.1s; max-width: 240px; box-shadow: 0 4px 18px rgba(0,0,0,0.12); font-size: 11.5px; line-height: 1.65; }
+/* Node tooltip */
+#tip {
+  position: fixed; z-index: 500;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 7px; padding: 9px 13px;
+  pointer-events: none; opacity: 0;
+  transition: opacity 0.1s; max-width: 250px;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.1); font-size: 11.5px; line-height: 1.6;
+}
 #tip.show { opacity: 1; }
-#tip h4 { font-family: 'Playfair Display', serif; font-size: 13px; color: var(--accent); margin-bottom: 3px; }
-#tip h4.sub { color: var(--sub-str); }
+#tip h4 {
+  font-family: 'Source Serif 4', serif; font-weight: 600;
+  font-size: 12.5px; color: var(--accent); margin-bottom: 3px;
+}
+#tip h4.sub { color: var(--sub-col); }
 #tip p { color: var(--muted); }
 #tip em { color: var(--text); font-style: normal; font-weight: 500; }
-#tip .hint { font-size: 10px; color: #ccc; margin-top: 4px; }
+#tip .hint { font-size: 10px; color: var(--border); margin-top: 4px; }
+
+/* ── LEGEND ── */
+#legend {
+  position: fixed; bottom: 48px; left: 14px; z-index: 100;
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 7px; padding: 9px 13px;
+  display: flex; flex-direction: column; gap: 5px;
+}
+#legend-title {
+  font-size: 9px; font-weight: 600; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 1px;
+}
+.li { display: flex; align-items: center; gap: 8px; font-size: 10.5px; color: var(--muted); }
+.li-circle {
+  width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
+  border: 1.6px solid var(--node-str); background: var(--node-fill);
+}
+.li-circle.sub {
+  border-color: var(--sub-col);
+  background: var(--sub-fill); width: 10px; height: 10px;
+}
+.li-arrow { width: 22px; height: 1.5px; background: var(--link-col); position: relative; flex-shrink: 0; }
+.li-arrow::after {
+  content: ''; position: absolute; right: -1px; top: -3.5px;
+  border-left: 7px solid var(--link-col);
+  border-top: 4px solid transparent; border-bottom: 4px solid transparent;
+}
+.li-arrow.sub { background: var(--sub-link); }
+.li-arrow.sub::after { border-left-color: var(--sub-link); }
+.li-arrow.mutual { background: var(--green-lt); }
+.li-arrow.mutual::after { border-left-color: var(--green-lt); }
 </style>
 </head>
 <body>
-<div id="hdr">
+
+<div id="header">
   <h1>Joking Relations — Burkina Faso</h1>
-  <span class="sub" id="subtitle">loading…</span>
-  <span class="badge">FOCUSED VIEW</span>
+  <span id="subtitle">loading…</span>
 </div>
 
-<div id="ctrl">
-  <span class="clabel">Links</span>
-  <div class="tg">
-    <button class="tb on" id="btn-sel"    onclick="setMode('sel')">On select</button>
-    <button class="tb"    id="btn-all"    onclick="setMode('all')">All</button>
-    <button class="tb"    id="btn-strong" onclick="setMode('strong')">Strong (≥5)</button>
+<div id="controls">
+  <span class="ctrl-label">Show links</span>
+  <div class="toggle-group">
+    <button class="tbtn"    id="btn-sel"    onclick="setLinkMode('selected')">On select</button>
+    <button class="tbtn"    id="btn-all"    onclick="setLinkMode('all')">All (faded)</button>
+    <button class="tbtn on" id="btn-strong" onclick="setLinkMode('strong')">Strong only</button>
+  </div>
+  <span class="ctrl-label" style="margin-left:4px">Dots</span>
+  <div class="toggle-group">
+    <button class="tbtn on" id="btn-pon"  onclick="setPats(true)">Show</button>
+    <button class="tbtn"    id="btn-poff" onclick="setPats(false)">Hide</button>
   </div>
 </div>
 
 <svg id="viz"></svg>
 
+<!-- Side panel -->
 <div id="panel">
-  <div id="ph">
-    <button id="pc" onclick="closePanel()">×</button>
-    <div id="pt"></div>
-    <div id="pm"></div>
+  <div id="panel-head">
+    <button id="panel-close" onclick="closePanel()">×</button>
+    <div id="panel-title"></div>
+    <div id="panel-meta"></div>
   </div>
-  <div id="ptabs">
-    <button class="ptab active" id="tab-fwd" onclick="switchTab('fwd')">→ Forward</button>
-    <button class="ptab"        id="tab-rev" onclick="switchTab('rev')">← Reverse</button>
+  <div id="panel-tabs">
+    <button class="ptab active" id="tab-fwd"  onclick="switchTab('fwd')">→ Forward</button>
+    <button class="ptab"        id="tab-rev"  onclick="switchTab('rev')">← Reverse</button>
   </div>
-  <div id="pb"></div>
+  <div id="panel-body"></div>
 </div>
 
 <div id="tip"></div>
 
-<div id="bar">
-  <span><strong>Click</strong> a node to select</span>
-  <span><strong>Click a second node</strong> to view their relation</span>
-  <span><strong>Drag</strong> to reposition</span>
-  <div id="bar-status"><span>Nothing selected</span></div>
-  <button id="clear-btn" onclick="clearSel()">✕ Clear</button>
+<div id="modebar">
+  <span><strong>Click</strong> a circle to select it</span>
+  <span><strong>Click a second circle</strong> to see joking-relation patronymes</span>
+  <span><strong>Drag</strong> nodes or canvas</span>
+  <div id="mode-status"><span>Nothing selected</span></div>
+  <button id="clear-btn" onclick="clearSelection()">✕ Clear</button>
 </div>
 
 <div id="legend">
-  <div class="lt">Legend</div>
-  <div class="li"><div class="lc"></div>Ethnic group (node size = # patronymes)</div>
-  <div class="li"><div class="lc sub"></div>Subgroup — shown as satellite node</div>
-  <div class="li"><div class="lsl"></div>Subgroup connector (to parent)</div>
-  <div class="li"><div class="ll"></div>Joking relation (arrow = direction)</div>
-  <div class="li"><div class="ll mut"></div>Mutual joking relation</div>
+  <div id="legend-title">Legend</div>
+  <div class="li"><div class="li-circle"></div>Ethnic group</div>
+  <div class="li"><div class="li-circle sub"></div>Subgroup (nested in parent)</div>
+  <div class="li"><div class="li-arrow"></div>Joking relation (eth → eth)</div>
+  <div class="li"><div class="li-arrow sub"></div>Joking relation involving subgroup</div>
+  <div class="li"><div class="li-arrow mutual"></div>Mutual relation</div>
 </div>
 
 <script>
-// ─── DATA ───────────────────────────────────────────────────────────────────
-// Professor's target groups: Bisa, Bobo/Bwaba, Dagari, Gourounsi, Lobi, Birifor, Mossi, Peuhl, Samo, Goin(=Cerma/Gan), Gourmantche, Senoufo
-// From the Excel analysis, mapped to canonical names in dataset:
-// Samo = San (or Dafing?), Goin ≈ Cerma, Bwaba = Bwa
+const _embeddedData = {"ethnicities":[{"id":"Bissa","count":95},{"id":"Bobo","count":13},{"id":"Bwa","count":59},{"id":"Dagara","count":92},{"id":"Gourounsi","count":40},{"id":"Lobi","count":22},{"id":"Birifor","count":3},{"id":"Mossi","count":239},{"id":"Peul","count":36},{"id":"San","count":48},{"id":"Gourmantché","count":83},{"id":"Senoufo","count":7}],"subgroups":[{"id":"Peul (Jaawambe)","parent":"Peul","count":1,"patronymes":["BOKOUM/ BOCOUM"]},{"id":"Mossi (Yadse)","parent":"Mossi","count":24,"patronymes":["AGBALIBIGA ( AGBAALIBIGA )","BAGA","BAGUIAN/ BAGUIYAN/ BAGUIA/ BAGAGNAN","BOUGMA ( BUGIMA )","DERRA","GUIRO","IBEOGO","KANAZOE","KOANDA/ KOUANDA/KOINDA/","KOCTY","KOULBEOGO","MANDE","MOGMENGA","RABO","SAANI/SANA","SAKANDE","SIMIAN","SINNI","SINON","SISSAO/CISSAO","SORE","SORO","SOUGRI","TINTO"]},{"id":"Mossi (Nakomsé)","parent":"Mossi","count":0,"patronymes":[]},{"id":"Peul (peul siloubè)","parent":"Peul","count":0,"patronymes":[]},{"id":"Peul (peul torobé)","parent":"Peul","count":0,"patronymes":[]},{"id":"Peul (peul-diandé)","parent":"Peul","count":0,"patronymes":[]},{"id":"Peul (torobé)","parent":"Peul","count":0,"patronymes":[]},{"id":"Mossi (Yorbmosse)","parent":"Mossi","count":1,"patronymes":["ADEGUEROU"]},{"id":"Mossi (zorgho mossi)","parent":"Mossi","count":0,"patronymes":[]}],"patronymes":{"Bissa":["ABEA/ABIA","ADANA","AZENWO","BALIMA ( Bisa )","BAMA ( hommes ) KANMA ( femmes )","BAMBA","BAMBARA","BAMBORE","BANCE","BANDAOGA","BARA","BASSANE","BATIEBO / BATIOBO/TIOBO ( homme ) KANTIOBO/ KANTIEBO ( femme )","BEM","BIDIGA","BILLA","BONSA/BONSARE","BOUNDANE/ BOUNDAONE","BOUSARE","BOUSSIM","DABONE","DABRE","DENE","DIABRE","DIASSO","DIESSOMGO/ DIESSONGO/PIRKASSOU","DINGARA","GABE","GALBANI/GALBANE","GAMBO","GAMENE","GANSANE","GARANGO","GNEGNE","GOUBA","GOULLA","GRIMANIO","GUEBRE/DJEBRE/DIABRE/GU IEBRE","GUENGANE/GUINGANE","KARENE/KAMBONE/BERMO NE","KOBRE","KODA","KOUDOUGOU","KOUHIZOURA","LAYO","LEGANI","LENGANE/ LINGANI","LIMBA","LOUGA","LOURE","MABONE","MARE","MASSIM / MASSIMBO","NAME","NATIAGA/ NATCHEGA","NAVE","NIAORE","NIYAGA OU NEYAGA","NOMBRE","NONNI","OUSSALE/OUSSALI","SAGNE","SAMADOULGOU/ SAMANDOULGOU","SAMBARE","SANGO","SARE","SEONE/ SEONI","SIMBRE","SIMBRI","SINKA","SIRA","SOULGANE","TARNAGDA","TAÏTA/TAHITA","TIENTAO","WANDAOGO/ OUANDAOGO","YABRE","YAGO","YAKA","YAMA","YANGANE","YANKINE","YAO","YARA","YAWANA","YIGO","ZAMPALIGRE","ZAMPOU","ZANE","ZANRE/ZARE","ZELLE","ZIBARE","ZIRGAMA","ZOUMBA","ZOURE"],"Bobo":["COULBALY/COULIBALY/COU LOUBALY","DAMA","DIABATE ( Bobo )","DIANE","DIOMA","DOFINI","KIENOU","KONATE/ KOONATE","MILLOGO","SANAO","SANOU / SANOH/ SANON","SOARA / SORA","SORA/SOARA"],"Bwa":["BADOUN","BAHOUN","BANI","BAYE","BICABA","BIHOUN","BOGNANA","BOGNINI","BOMBÈ","BONKIAN","BONZI","BOUE","COULBALY/COULIBALY/COU LOUBALY","DAKUYO","DAYO","DIANOU ( Buaba )","DOMOUA","FAHO/FAO","FOFANA","GAO","GNANMBAHOUN","GNOUMOU","HA","HABOU","HOUIN","KADEBA","KAHOUN","KAMBOUA","KAMI","KAN","KANI","KAZAWA","KERE","KIENOU/KOUENOU ( Buaba )","KINI","KOHO","KOHOUN","KONATE/ KOONATE","KONDE","KOURA ( Buaba )","LAMIEN/ LAMI/ LAMY","LIEHOUN","LOHOUARA","LOYARA","NAKOHOUN","OROKKUY","SABOUE","SAHO","SAMBOUE","SENI","TAMINI","TANI et VAHOUN","TANOU","TIAHO","TIANHOUN","TIRA","TUINA","VIHO/VOHO","YE"],"Dagara":["AYOUORE","BAAGNOUOLE","BAAGUOLE","BAAKUNDOGAARE","BABELE","BACIELE","BADUOLE","BAHIELE","BANGUOLE","BANUOLE","BANYIINE","BASIELE","BATANE","BATCE","BECIELE","BEKIELE","BEKUO-DACIARA","BEKUO-DAMUOL","BEKUONE","BENYUOLE","BERCIELE","BERNYINE","BERWUOLE","BIIBILE","BIRFUORE","BITUOLE","BLACUURE","BREE","BULZAWLE","CAALE","CEBERE","DAAFIELE","DABIRE","DABO","DAPKELE","DEWRE","DIKPIELE","DOMAALE","DOTIELE","DUTIELE","GANE","GBAANE","GBENE","GBETUOLE","HAYUORE","HAYURE/ HAYUULE","IENPIORE","IKE","JIKPELWORE","JIKPIELE","KOMBIERE","KOMUR","KONATE","KPANYAWNE","KPENALE","KPIELE","KPIERDOME","KPOLAARE","KUBIELE","KUFULE","KULUOR","KUMIINE","KUNYOWLE","KUOLE","KUSABLE","KUSEBLE","KUSIELE","KUSLE","KUTORE","KUWERE","KYEBERE/CEBERE","METO-DAZULE","METO-KAWIILE","METO-KAZIILE","METUOLE","METUOR","MILLE","NABEWLE","NYUOLE","SIA","TAMBIILE","TIERE","TOGBOLE","WAALE","WAALKUOLE","YEBERE","YOYUOLE","YUONE","ZABUOLE","ZAGE","ZAW/ ZAWE/ZAGUE/ZAGE","ZUE"],"Gourounsi":["AKOANDAMBOU","AZIKIBA/AZIGBA","BADIEL ( homme ) KANDIEL ( femme )","BAKALA ( homme ) KANKALA ( femme )","BALA ( Gurunsi )","BASSIRI","BAYOULOU","BAZIE ( hommes ) KANZIE ( femmes )","BOURMONE","DADJOARI","DIABRI","DIAOUARI ( JAWAARI )","DIGONGA ( DUGONGA )","DIYAMBA","DJIBOUGOU","DJIDIABO ( JIJABO )","ELOLA","FOURGA","GUENE","HIRIGUE/ SOULE","ILLY","KERE","KODABO/ KONDABO","LANKOANDE","LAURA","NASSARA","OUOBA","PISSIGA","SAMA","SENI","SIEPAMMA","SOUOBOU","TOMONGA ( TUOMOANGA )","TORO","TOULA","VAFE","WOBA/OUABA","YABILI","YARGA","ZIE"],"Lobi":["DIAO","DIBLONI/ DIBOULO/ DIBOULONI ( Lobi )","DIOLOMPO ( lobi ) DJOLOMPO ( Birifor )","DJORBIEL/ DIOURBIEL /DJOURBIEL ( Lobi )","GONGO /GONGON ( lobi )","HIEN","KAMBOU","KAMBOULE/ KAMBOUELE/ KAMBOUOLE","KANSIE/KANSE","KIMPE/KIMPÈ","LANTA","MIJOUR/ MIDJOUR ( Lobi )","MONO /MOMO","NOUFE","PALE","PODA","POODA","SIA ou SIB","SOME/SOM","TIOLE/ TIOYE ( Lobi )","TOU","YOUL"],"Birifor":["DOLI/DOLY/DOLLY","KAMBIRE/KAMBIRET/ KAMBILE","PALENFO"],"Mossi":["ANDOGONABA","BAGRE/ GABRE/GAGRE","BALMA","BAMOGO","BANGRE","BARGO","BEI","BELEMBOUDOU","BELEMGNEGRE","BELEMSIGRI","BELEMTOUGRI","BELEMVIRE","BELEMWOURGOU","BEMBAMBA","BERE","BEREHOUDOUGOU","BIGTOGO","BISSIGA","BOLOGO","BONKOUNGOU","BOUDA","BOUGOUM","BOUMBAGA ( BUNBAAGA )","COMPAORE","CONSEIGA/KONSEIGA","CONSIMBO/KONSINBO","CONVOLBO/ KONVOLBO","DADA","DAKISSAGA","DAKOURE","DAMBEGA","DAMBRE","DAMIBA","DAYAMBA","DEM","DEME ( moaga )","DIALGA","DIENDERE","DIMZOURE","DJIBILA","DJIGUEMDE/ DJIGUIMDE/ GUIGUEMDE","DONDIERE","DOUBAR","GANDEMA","GARANE","GOURE","GUERE","GUIATAIN/GUETIN/BIATIN","GUIBILA","GUIELBEOGO/ GUELBEOGO","GUIGMA","ILBOUDO/ LILBOUDO","ILLY","IMA","KABORE","KABRE","KAFANDO","KAGAMBEGA/ KAMBEGA","KALGA","KANGA","KARFO","KARIGNAN/KALIGNAN/KAGN AN","KAZINDE","KAZINGA","KENON","KENORE/ KINORE/KIENORE","KIEKIETA","KIEMDE","KIEMTAREMBOUM/ TIEMTAREMBOUM","KIEMTORE/ TIEMTORE","KIENDREBEOGO/ TIENDREBEOGO","KIENTGA/KIENTIGA/KIENTE GA","KINDA","KINDO","KIOGO","KISSOU","KOALA","KOGWINDGA","KOLOGO","KOMBAMTANGA","KOMBAMTENGA/ KOMBAMTANGA","KOMBOIGO","KONCOBO/KONKOBO","KONDITAMDE","KONGZABRE","KONOMBO","KOROGO/KORGO","KOSPORE","KOUAMA","KOUDOUGOU","KOUGOUWINDIGA","KOUMBEM","KOUMSAGA","KOURAOGO","KOURITA","KYELEM","LALSAGA","LEGUA/LEGA","LEGUELEGUE/LENGLEGUE","LESSEMBA","LOANGA","LONFO","MALGOUBRI","MINOUNGOU","MORGO","NABALMA","NABI","NABOALGA","NACANABO/ NAKANABO","NACOULMA","NADEMBEGA","NADIEBA","NANA","NASRE","NASSA","NAYAGA","NIANSONGO","NIKIEMA/ NITIEMA","NYAMPA","OUALBEOGO","OUANGA","OUBDA","OUEDA","OUEDDOUDA","OUEDRAOGO","OUELBEOGO","OUIBGA","OUIYA","OULOUDOU","OUMZANGA","PAKODTOGO","PANATIGRI","PARFARDNAM/ PAFADNAM","PARKOUDA","PASGHO/PASGO/ POOSGO","PITROIPA","POGRAWA","POUGMA/PUGMA","POUYA","RAMDE","REGTOUNDA","REMEN/REMAIN/DEMEN","RIGMEMWEOGO/ DIGMEMWEOGO","ROAMBA","ROMBA","RONGA","SAAGA","SALGA ou SALGRE","SALGO","SALOUKA","SAM","SAMTOUMA","SANDWIDI","SANE","SANFO","SANKARA","SAOURA","SARBA","SAYAOGO","SEBGO/ SEBEGO","SEDGHO/ SEDOGO","SEMDE / SIMPORE","SILGA","SIMPORE","SINARE","SINDEOGO","SINDOGO","SINGUIBEOGO","SOMLARE","SONDO ( moaga )","SORGHO/YIRGA","SOUBEIGA","SOULE ( Femme ) GONDE ( Homme )","SOULGA","SOULY","SOUMANDA","SOURWEIMA/ SOURWEMA","SOURWILA","TAGO","TANAMA","TANKOANO","TAOGO/TAOKO","TAONSA","TAPSOBA","TARBAGDO","TARPAGA","TASSEMBEDO","TEBDA","TIABONDOU","TIROGO","TOE","TONDE","TONI","TONTOROGBO","TORODO","TOUGRI","TOUMA","VALIAN/VALEAN","VEBAMBA/VEBEMBA","WANGA","WANGO/OUANGO","WANGRAOUA","WANGRAWA","WEREMI/ OUERMI","WOBGO","YAKORO","YANOGO","YAOGO","YARBANGA/ YERBANGA","YELNOGO","YIKOUDOUGOU","YIRGA","YLYENGA","YOAGA","YOUGMA/ YOUMA/ZABRE","ZABDA","ZAGRE","ZALLE","ZAMBELOGO/ ZAMBELONGO","ZAMTAOKO/ZAMTAKO","ZANGRE","ZANTE/ ZATE","ZEBRET","ZI","ZIDA","ZINABA","ZINSONI","ZOEHINGA/ZOEGNINGA","ZOMA","ZONA","ZORE","ZOROM","ZOROME ( Buaba )","ZOUBA","ZOUBGA","ZOUGMORE","ZOUMBRI","ZOUNDI","ZOUNGRANA"],"Peul":["BA","BANDE","BARRY","BASSOUM","BIKIENGA","BOLY","CAMARA/KAMARA","CISSE","DABONGOU/DABOUGOU","DAOU","DIA","DIABATE ( Peul )","DIAKITE","DIALLO/DIAL","DIANDE","DICKO","DOUCOURE/ DOUKOURE","FANDE","GAKO","GOURO","HAIDARA","JAANTO","LY","MASSA","NATAMA","NAYETTE","NEYA","OJAANTO","SAMASSEKOU","SANGO","SONDE","SOW","SY","TALL","TAMBOURA","TIAM"],"San":["BAGUE","BAKY/ BAKI ( homme ) KANKI ( femme )","BAYANE","BEITE","BELEMKOABGA","BELEMNABA","BIRBA","CEDOGO","CONGO/KONGO","DJENI/ DIENI","DJIBO","DRABO ( San )","FORGO","GO","GOLANE","GOROU","KARAMBIRI","KI –ZERBO","KI/ KY","KOBEANE","KOMBASSERE/ COMBASSERE","KONANE","KONKISRE","KONKOLET","KOUDA","KOUSSOUBE","LAMIZANA","MOSSE","NARE","NIAMBA","PARE","SIA","SIENE","SO/SOW","SOMTORE","SONDO ( san )","SORO ( San )","TEGUERA","TERI","TOPAN","WERMA","YAMEOGO","YAO ( san )","YELEMOU","ZALLA","ZAN","ZERBO","ZOMBO"],"Gourmantché":["BABOANGOU ( BAABOANGU )","BANGA","BANGOU ( GBANGU )","BANKOUAMBA","BASSA","BOUMBA ( BUNBA )/BOUNDIA / ( BUNJOA )/ BUNNILO","BOURGOU ( BURIGU )","COMBARY","COULDIATY ( KULIJARI )","DABINI ( DAABINNI )","DAHANI ( DAAHAANNI bi DAAHAANI )","DAMBINA/DANBINA","DIABO ( JABO )","DIABOUGA","DIANOU ( Gourmantché )","DIBANGUI ( DIBANGI )","DIBOUGOU ( JIBUUGU )","DIONI /JOONI ( hommes ) POSSIGUINI ( femmes )","DITANGA ( JITANGA )","DJOLGOU","DORI ( DUORI )","GADOU ( GAADU )","GNINDIERGOU (ÑINJELIGU )","GORDIA ( GOARIJOA )","GUIBGOU","GUIDA","HARO","IDANI","KANMOANI","KOADIMA","KOANARI ( KOANAARI )","KOBORI ( KOBUOLI )","KOGDI ( KOAGIDI )","KOMONDI ( KOMOANDI )","KONDIA","KOULA ( KULA )","KOULABIGA","KPABOAMBA","LOMPO","MADIEGA","MANO","NABA","NADIAGOU ( NAAJAAGU )","NADINGA","NAMOANO","NAMOUNTOUGOU ( NAMUNTUUGU )","NAPAGOU ( NAAKPAAGU )","NASSOURI","NATALI","NATIA ( NAACAA )","NAYINI ( NAAYINI )","NIABA","NOUALI ( NUALI )","NOULA","ODAGOU ( ODAAGU )","ONADIA","OUALI","SADIO ( SAGIJOA ) les hommes SAPOA ( SAGIPUA ) les femmes","SAGADOU ( SAGIDU )","SANGLI","SININI","SOGLI","SOUABOU","TABOUDOU ( TAABUUDU )","TAMBIGA ( TANBIIGA )","TAMBOANGOU ( TANBOANGU )","TAMBORI ( TANBUOLI )","TAMBOUGOU ( TANBUUGU )","TAMPOUDI","TANDAMBA","TANI","TANLI/TANLY","TANOUBA","TANPANGA","THOMBIANO/THIOMBIANO","TIAMBIGA/ TIAMOBIGA/ CIAMOBIGA )","TINDANO","TINDOUM","TONPOUDI ( TONPUDI )","WABOA","YOLO","YONLI","ZERI/YERI"],"Senoufo":["BENGALI/BANGALI","COULBALY/COULIBALY/COU LOUBALY","DEMBELE","DIARRA","KHAMA","OUATTARA","SANOGO"]},"links":[{"source":"Birifor","target":"Senoufo","weight":3,"patronymes":["DOLI/DOLY/DOLLY","KAMBIRE/KAMBIRET/ KAMBILE","PALENFO"]},{"source":"Bissa","target":"Bobo","weight":1,"patronymes":["MABONE"]},{"source":"Bissa","target":"Bwa","weight":1,"patronymes":["MABONE"]},{"source":"Bissa","target":"Gourounsi","weight":73,"patronymes":["BALIMA ( Bisa )","BAMBARA","BAMBORE","BANCE","BANDAOGA","BARA","BEM","BIDIGA","BILLA","BONSA/BONSARE","BOUNDANE/ BOUNDAONE","BOUSARE","BOUSSIM","DABONE","DENE","DIESSOMGO/ DIESSONGO/PIRKASSOU","GABE","GALBANI/GALBANE","GAMBO","GAMENE","GANSANE","GARANGO","GNEGNE","GOUBA","GOULLA","GUEBRE/DJEBRE/DIABRE/GU IEBRE","GUENGANE/GUINGANE","KARENE/KAMBONE/BERMO NE","KOBRE","KODA","KOUDOUGOU","LAYO","LEGANI","LENGANE/ LINGANI","LIMBA","LOURE","MABONE","MARE","MASSIM / MASSIMBO","NAME","NIAORE","NOMBRE","NONNI","SAGNE","SAMADOULGOU/ SAMANDOULGOU","SAMBARE","SANGO","SARE","SEONE/ SEONI","SIMBRE","SIMBRI","SINKA","SIRA","SOULGANE","TARNAGDA","TAÏTA/TAHITA","WANDAOGO/ OUANDAOGO","YABRE","YAKA","YAMA","YANGANE","YANKINE","YAO","YARA","YIGO","ZAMPALIGRE","ZAMPOU","ZANE","ZANRE/ZARE","ZELLE","ZIRGAMA","ZOUMBA","ZOURE"]},{"source":"Bissa","target":"Mossi","weight":1,"patronymes":["GANSANE"]},{"source":"Bissa","target":"Mossi (Yadse)","weight":78,"patronymes":["ABEA/ABIA","ADANA","AZENWO","BALIMA ( Bisa )","BAMA ( hommes ) KANMA ( femmes )","BAMBARA","BAMBORE","BANCE","BANDAOGA","BARA","BATIEBO / BATIOBO/TIOBO ( homme ) KANTIOBO/ KANTIEBO ( femme )","BEM","BIDIGA","BILLA","BONSA/BONSARE","BOUSARE","BOUSSIM","DABONE","DENE","DIASSO","GABE","GALBANI/GALBANE","GAMBO","GAMENE","GANSANE","GARANGO","GNEGNE","GOUBA","GOULLA","GUEBRE/DJEBRE/DIABRE/GU IEBRE","GUENGANE/GUINGANE","KARENE/KAMBONE/BERMO NE","KOBRE","KODA","KOUDOUGOU","LAYO","LEGANI","LENGANE/ LINGANI","LIMBA","LOURE","MABONE","MARE","MASSIM / MASSIMBO","NAME","NATIAGA/ NATCHEGA","NIAORE","NOMBRE","NONNI","OUSSALE/OUSSALI","SAGNE","SAMADOULGOU/ SAMANDOULGOU","SANGO","SARE","SEONE/ SEONI","SIMBRE","SIMBRI","SINKA","SIRA","SOULGANE","TARNAGDA","TAÏTA/TAHITA","WANDAOGO/ OUANDAOGO","YABRE","YAKA","YAMA","YANGANE","YANKINE","YAO","YARA","YIGO","ZAMPALIGRE","ZAMPOU","ZANE","ZANRE/ZARE","ZELLE","ZIBARE","ZOUMBA","ZOURE"]},{"source":"Bissa","target":"Peul","weight":2,"patronymes":["MABONE","YIGO"]},{"source":"Bissa","target":"San","weight":2,"patronymes":["BARA","TARNAGDA"]},{"source":"Bobo","target":"Peul","weight":11,"patronymes":["COULBALY/COULIBALY/COU LOUBALY","DAMA","DIABATE ( Bobo )","DIOMA","KIENOU","KONATE/ KOONATE","MILLOGO","SANAO","SANOU / SANOH/ SANON","SOARA / SORA","SORA/SOARA"]},{"source":"Bobo","target":"Senoufo","weight":1,"patronymes":["COULBALY/COULIBALY/COU LOUBALY"]},{"source":"Bwa","target":"Birifor","weight":1,"patronymes":["BOGNINI"]},{"source":"Bwa","target":"Bobo","weight":4,"patronymes":["BADOUN","KADEBA","KAMI","VIHO/VOHO"]},{"source":"Bwa","target":"Gourounsi","weight":1,"patronymes":["GAO"]},{"source":"Bwa","target":"Lobi","weight":10,"patronymes":["BAYE","BOGNINI","BOMBÈ","DOMOUA","GAO","KADEBA","KAMBOUA","KANI","LAMIEN/ LAMI/ LAMY","LOHOUARA"]},{"source":"Bwa","target":"Peul","weight":52,"patronymes":["BADOUN","BAHOUN","BANI","BAYE","BICABA","BIHOUN","BOGNANA","BOGNINI","BOMBÈ","BONZI","BOUE","COULBALY/COULIBALY/COU LOUBALY","DAKUYO","DAYO","DOMOUA","FOFANA","GAO","GNANMBAHOUN","GNOUMOU","HABOU","HOUIN","KADEBA","KAHOUN","KAMBOUA","KAMI","KANI","KAZAWA","KERE","KIENOU/KOUENOU ( Buaba )","KINI","KOHO","KOHOUN","KONATE/ KOONATE","KONDE","KOURA ( Buaba )","LAMIEN/ LAMI/ LAMY","LIEHOUN","LOHOUARA","NAKOHOUN","OROKKUY","SABOUE","SAHO","SENI","TAMINI","TANI et VAHOUN","TANOU","TIAHO","TIANHOUN","TIRA","TUINA","VIHO/VOHO","YE"]},{"source":"Bwa","target":"San","weight":1,"patronymes":["BOGNANA"]},{"source":"Bwa","target":"Senoufo","weight":13,"patronymes":["BAHOUN","BAYE","BOGNINI","BONKIAN","COULBALY/COULIBALY/COU LOUBALY","HABOU","KADEBA","KAMI","KAN","KANI","LAMIEN/ LAMI/ LAMY","TIANHOUN","TIRA"]},{"source":"Dagara","target":"Birifor","weight":1,"patronymes":["ZUE"]},{"source":"Dagara","target":"Gourmantché","weight":1,"patronymes":["IKE"]},{"source":"Dagara","target":"Mossi","weight":1,"patronymes":["IKE"]},{"source":"Dagara","target":"Senoufo","weight":83,"patronymes":["AYOUORE","BAAGNOUOLE","BAAGUOLE","BAAKUNDOGAARE","BABELE","BACIELE","BADUOLE","BAHIELE","BANGUOLE","BANUOLE","BANYIINE","BASIELE","BATANE","BATCE","BECIELE","BEKIELE","BEKUO-DACIARA","BEKUO-DAMUOL","BEKUONE","BENYUOLE","BERCIELE","BERNYINE","BERWUOLE","BIIBILE","BIRFUORE","BITUOLE","BLACUURE","BREE","BULZAWLE","CAALE","CEBERE","DAAFIELE","DABIRE","DAPKELE","DEWRE","DIKPIELE","DOTIELE","DUTIELE","GANE","GBAANE","GBENE","GBETUOLE","HAYUORE","HAYURE/ HAYUULE","IENPIORE","IKE","JIKPELWORE","JIKPIELE","KOMBIERE","KOMUR","KPANYAWNE","KPENALE","KPIELE","KPIERDOME","KPOLAARE","KUBIELE","KUFULE","KULUOR","KUMIINE","KUNYOWLE","KUOLE","KUSABLE","KUSEBLE","KUSIELE","KUSLE","KUTORE","KUWERE","KYEBERE/CEBERE","METUOLE","METUOR","MILLE","NABEWLE","TAMBIILE","TIERE","TOGBOLE","WAALE","WAALKUOLE","YEBERE","YOYUOLE","YUONE","ZABUOLE","ZAW/ ZAWE/ZAGUE/ZAGE","ZUE"]},{"source":"Gourmantché","target":"Bobo","weight":1,"patronymes":["SOUABOU"]},{"source":"Gourmantché","target":"Bwa","weight":1,"patronymes":["SOUABOU"]},{"source":"Gourmantché","target":"Mossi","weight":1,"patronymes":["TINDOUM"]},{"source":"Gourmantché","target":"Mossi (Yadse)","weight":56,"patronymes":["BABOANGOU ( BAABOANGU )","BANGA","BANGOU ( GBANGU )","BASSA","BOURGOU ( BURIGU )","COMBARY","COULDIATY ( KULIJARI )","DABINI ( DAABINNI )","DAHANI ( DAAHAANNI bi DAAHAANI )","DAMBINA/DANBINA","DIABO ( JABO )","DIANOU ( Gourmantché )","DIBOUGOU ( JIBUUGU )","DJOLGOU","GNINDIERGOU (ÑINJELIGU )","GUIBGOU","GUIDA","HARO","IDANI","KANMOANI","KOADIMA","KOBORI ( KOBUOLI )","KOGDI ( KOAGIDI )","KOMONDI ( KOMOANDI )","KONDIA","KPABOAMBA","LOMPO","MANO","NADINGA","NAMOANO","NAMOUNTOUGOU ( NAMUNTUUGU )","NASSOURI","NATALI","NATIA ( NAACAA )","NOUALI ( NUALI )","ONADIA","OUALI","SADIO ( SAGIJOA ) les hommes SAPOA ( SAGIPUA ) les femmes","SAGADOU ( SAGIDU )","SANGLI","SOGLI","SOUABOU","TAMBORI ( TANBUOLI )","TAMBOUGOU ( TANBUUGU )","TAMPOUDI","TANDAMBA","TANI","TANLI/TANLY","TANPANGA","THOMBIANO/THIOMBIANO","TIAMBIGA/ TIAMOBIGA/ CIAMOBIGA )","TINDANO","TINDOUM","TONPOUDI ( TONPUDI )","WABOA","YONLI"]},{"source":"Gourmantché","target":"Peul","weight":8,"patronymes":["BANGA","MANO","NOULA","SOUABOU","TANI","TANOUBA","TINDOUM","YOLO"]},{"source":"Gourmantché","target":"Peul (torobé)","weight":1,"patronymes":["SOUABOU"]},{"source":"Gourmantché","target":"San","weight":2,"patronymes":["TANI","ZERI/YERI"]},{"source":"Gourounsi","target":"Bissa","weight":5,"patronymes":["AKOANDAMBOU","AZIKIBA/AZIGBA","BADIEL ( homme ) KANDIEL ( femme )","BALA ( Gurunsi )","BAZIE ( hommes ) KANZIE ( femmes )"]},{"source":"Gourounsi","target":"Bwa","weight":1,"patronymes":["SAMA"]},{"source":"Gourounsi","target":"Gourmantché","weight":1,"patronymes":["LAURA"]},{"source":"Gourounsi","target":"Mossi","weight":1,"patronymes":["ZIE"]},{"source":"Gourounsi","target":"Mossi (Yadse)","weight":21,"patronymes":["AKOANDAMBOU","AZIKIBA/AZIGBA","BADIEL ( homme ) KANDIEL ( femme )","BAZIE ( hommes ) KANZIE ( femmes )","DADJOARI","DIABRI","DIAOUARI ( JAWAARI )","DIYAMBA","DJIBOUGOU","FOURGA","GUENE","KERE","LANKOANDE","OUOBA","PISSIGA","SENI","SIEPAMMA","SOUOBOU","TOMONGA ( TUOMOANGA )","WOBA/OUABA","YABILI"]},{"source":"Gourounsi","target":"Peul","weight":3,"patronymes":["KODABO/ KONDABO","WOBA/OUABA","YARGA"]},{"source":"Gourounsi","target":"San","weight":2,"patronymes":["LAURA","TORO"]},{"source":"Lobi","target":"Dagara","weight":2,"patronymes":["DIAO","TOU"]},{"source":"Lobi","target":"Mossi (Yadse)","weight":1,"patronymes":["DIAO"]},{"source":"Lobi","target":"Senoufo","weight":15,"patronymes":["DIBLONI/ DIBOULO/ DIBOULONI ( Lobi )","DIOLOMPO ( lobi ) DJOLOMPO ( Birifor )","DJORBIEL/ DIOURBIEL /DJOURBIEL ( Lobi )","GONGO /GONGON ( lobi )","HIEN","KAMBOU","KANSIE/KANSE","KIMPE/KIMPÈ","MIJOUR/ MIDJOUR ( Lobi )","MONO /MOMO","PODA","POODA","SOME/SOM","TIOLE/ TIOYE ( Lobi )","YOUL"]},{"source":"Mossi","target":"Bissa","weight":2,"patronymes":["GUIGMA","SALOUKA"]},{"source":"Mossi","target":"Bobo","weight":2,"patronymes":["SANKARA","TANKOANO"]},{"source":"Mossi","target":"Bwa","weight":1,"patronymes":["TANKOANO"]},{"source":"Mossi","target":"Gourmantché","weight":7,"patronymes":["BOLOGO","NACANABO/ NAKANABO","ROMBA","RONGA","SALOUKA","SOULE ( Femme ) GONDE ( Homme )","ZALLE"]},{"source":"Mossi","target":"Gourounsi","weight":8,"patronymes":["DIMZOURE","KABRE","KARIGNAN/KALIGNAN/KAGN AN","NIANSONGO","PARFARDNAM/ PAFADNAM","SALOUKA","ZALLE","ZINSONI"]},{"source":"Mossi","target":"Mossi (Nakomsé)","weight":1,"patronymes":["KABRE"]},{"source":"Mossi","target":"Mossi (Yadse)","weight":27,"patronymes":["BAMOGO","DAYAMBA","GOURE","ILBOUDO/ LILBOUDO","KABORE","KIENTGA/KIENTIGA/KIENTE GA","KINDO","KIOGO","KOMBAMTENGA/ KOMBAMTANGA","LALSAGA","NACOULMA","NASSA","PARFARDNAM/ PAFADNAM","POUGMA/PUGMA","SANKARA","SIMPORE","SINARE","TAGO","TIABONDOU","YLYENGA","YOUGMA/ YOUMA/ZABRE","ZIDA","ZINSONI","ZOMA","ZONA","ZOROM","ZOROME ( Buaba )"]},{"source":"Mossi","target":"Mossi (zorgho mossi)","weight":1,"patronymes":["KYELEM"]},{"source":"Mossi","target":"Peul","weight":27,"patronymes":["BAMOGO","BARGO","ILBOUDO/ LILBOUDO","KIENTGA/KIENTIGA/KIENTE GA","KINDO","KOLOGO","KOMBAMTENGA/ KOMBAMTANGA","KOROGO/KORGO","LALSAGA","LESSEMBA","NACOULMA","NANA","NASSA","NIANSONGO","NIKIEMA/ NITIEMA","OUALBEOGO","PANATIGRI","SAM","SANFO","SAOURA","TEBDA","YOUGMA/ YOUMA/ZABRE","ZOEHINGA/ZOEGNINGA","ZOMA","ZORE","ZOROM","ZOROME ( Buaba )"]},{"source":"Mossi","target":"San","weight":171,"patronymes":["ANDOGONABA","BAGRE/ GABRE/GAGRE","BALMA","BANGRE","BEI","BELEMBOUDOU","BELEMGNEGRE","BELEMSIGRI","BELEMWOURGOU","BEMBAMBA","BERE","BIGTOGO","BISSIGA","BOLOGO","BONKOUNGOU","BOUDA","BOUGOUM","COMPAORE","CONSEIGA/KONSEIGA","CONSIMBO/KONSINBO","CONVOLBO/ KONVOLBO","DADA","DAMBEGA","DAMBRE","DEM","DEME ( moaga )","DIALGA","DIENDERE","DIMZOURE","DJIBILA","DJIGUEMDE/ DJIGUIMDE/ GUIGUEMDE","DONDIERE","DOUBAR","GANDEMA","GUERE","GUIATAIN/GUETIN/BIATIN","GUIBILA","GUIELBEOGO/ GUELBEOGO","GUIGMA","ILBOUDO/ LILBOUDO","ILLY","KABORE","KABRE","KAFANDO","KAGAMBEGA/ KAMBEGA","KANGA","KARFO","KARIGNAN/KALIGNAN/KAGN AN","KAZINDE","KAZINGA","KENON","KENORE/ KINORE/KIENORE","KIEKIETA","KIEMDE","KIEMTAREMBOUM/ TIEMTAREMBOUM","KIEMTORE/ TIEMTORE","KIENDREBEOGO/ TIENDREBEOGO","KIENTGA/KIENTIGA/KIENTE GA","KINDA","KIOGO","KOGWINDGA","KOLOGO","KONCOBO/KONKOBO","KONDITAMDE","KOROGO/KORGO","KOSPORE","KOUAMA","KOUDOUGOU","KOUGOUWINDIGA","KOUMBEM","KOUMSAGA","KOURAOGO","KOURITA","LEGUA/LEGA","LESSEMBA","LOANGA","MALGOUBRI","MINOUNGOU","NABI","NABOALGA","NACANABO/ NAKANABO","NACOULMA","NANA","NASRE","NIKIEMA/ NITIEMA","NYAMPA","OUALBEOGO","OUBDA","OUEDA","OUEDRAOGO","OUIBGA","OUIYA","OULOUDOU","OUMZANGA","PANATIGRI","PARKOUDA","PITROIPA","POGRAWA","POUYA","RAMDE","REGTOUNDA","REMEN/REMAIN/DEMEN","RIGMEMWEOGO/ DIGMEMWEOGO","ROAMBA","ROMBA","RONGA","SAAGA","SALGA ou SALGRE","SALOUKA","SAM","SAMTOUMA","SANDWIDI","SANE","SAYAOGO","SEBGO/ SEBEGO","SEDGHO/ SEDOGO","SEMDE / SIMPORE","SILGA","SIMPORE","SINDEOGO","SINDOGO","SINGUIBEOGO","SOMLARE","SONDO ( moaga )","SORGHO/YIRGA","SOUBEIGA","SOULE ( Femme ) GONDE ( Homme )","SOULGA","SOULY","SOUMANDA","SOURWEIMA/ SOURWEMA","TAGO","TANAMA","TAOGO/TAOKO","TAONSA","TAPSOBA","TARBAGDO","TASSEMBEDO","TIROGO","TONDE","TONTOROGBO","TORODO","TOUGRI","VALIAN/VALEAN","VEBAMBA/VEBEMBA","WANGA","WANGO/OUANGO","WANGRAOUA","WANGRAWA","WOBGO","YAOGO","YIKOUDOUGOU","YIRGA","YLYENGA","YOAGA","ZABDA","ZAGRE","ZALLE","ZAMBELOGO/ ZAMBELONGO","ZAMTAOKO/ZAMTAKO","ZANGRE","ZEBRET","ZI","ZINABA","ZOEHINGA/ZOEGNINGA","ZOROM","ZOUBA","ZOUGMORE","ZOUMBRI","ZOUNDI","ZOUNGRANA"]},{"source":"Mossi (Yadse)","target":"Dagara","weight":1,"patronymes":["SAKANDE"]},{"source":"Mossi (Yadse)","target":"Gourmantché","weight":2,"patronymes":["KOANDA/ KOUANDA/KOINDA/","SAANI/SANA"]},{"source":"Mossi (Yadse)","target":"Peul","weight":17,"patronymes":["BAGA","BAGUIAN/ BAGUIYAN/ BAGUIA/ BAGAGNAN","DERRA","GUIRO","KOANDA/ KOUANDA/KOINDA/","KOCTY","MANDE","MOGMENGA","RABO","SAANI/SANA","SAKANDE","SIMIAN","SINNI","SORE","SORO","SOUGRI","TINTO"]},{"source":"Mossi (Yadse)","target":"San","weight":7,"patronymes":["KOANDA/ KOUANDA/KOINDA/","RABO","SAKANDE","SIMIAN","SORE","SORO","TINTO"]},{"source":"Mossi (Yorbmosse)","target":"Mossi","weight":1,"patronymes":["ADEGUEROU"]},{"source":"Peul","target":"Bobo","weight":20,"patronymes":["BA","BANDE","BARRY","CISSE","DIA","DIABATE ( Peul )","DIALLO/DIAL","DIANDE","DICKO","GAKO","HAIDARA","LY","NATAMA","NAYETTE","SANGO","SONDE","SOW","SY","TALL","TIAM"]},{"source":"Peul","target":"Bwa","weight":14,"patronymes":["BA","BANDE","BOLY","CISSE","DIA","DIABATE ( Peul )","DIALLO/DIAL","DICKO","LY","NATAMA","NAYETTE","SOW","SY","TIAM"]},{"source":"Peul","target":"Gourmantché","weight":2,"patronymes":["MASSA","SAMASSEKOU"]},{"source":"Peul","target":"Gourounsi","weight":1,"patronymes":["SAMASSEKOU"]},{"source":"Peul","target":"Mossi","weight":1,"patronymes":["TALL"]},{"source":"Peul","target":"Mossi (Yadse)","weight":16,"patronymes":["BA","BANDE","BARRY","CISSE","DIA","DIALLO/DIAL","DIANDE","DICKO","GAKO","HAIDARA","LY","MASSA","SANGO","SONDE","SOW","TALL"]},{"source":"Peul","target":"Peul (Jaawambe)","weight":1,"patronymes":["BA"]},{"source":"Peul","target":"Peul (peul siloubè)","weight":1,"patronymes":["LY"]},{"source":"Peul","target":"Peul (peul torobé)","weight":1,"patronymes":["DIA"]},{"source":"Peul","target":"Peul (peul-diandé)","weight":1,"patronymes":["BANDE"]},{"source":"Peul","target":"San","weight":1,"patronymes":["BIKIENGA"]},{"source":"San","target":"Bissa","weight":1,"patronymes":["BAKY/ BAKI ( homme ) KANKI ( femme )"]},{"source":"San","target":"Bobo","weight":2,"patronymes":["GO","GOROU"]},{"source":"San","target":"Bwa","weight":1,"patronymes":["GO"]},{"source":"San","target":"Mossi","weight":28,"patronymes":["BAYANE","DJENI/ DIENI","DJIBO","DRABO ( San )","FORGO","GO","GOLANE","KARAMBIRI","KI –ZERBO","KI/ KY","KOBEANE","KONANE","KOUSSOUBE","LAMIZANA","PARE","SIA","SIENE","SO/SOW","SONDO ( san )","TEGUERA","TERI","TOPAN","WERMA","YAO ( san )","YELEMOU","ZALLA","ZAN","ZERBO"]},{"source":"San","target":"Mossi (Yadse)","weight":3,"patronymes":["BAKY/ BAKI ( homme ) KANKI ( femme )","BEITE","CONGO/KONGO"]},{"source":"San","target":"Peul","weight":4,"patronymes":["BEITE","GO","GOROU","KI/ KY"]},{"source":"Senoufo","target":"Birifor","weight":2,"patronymes":["OUATTARA","SANOGO"]},{"source":"Senoufo","target":"Bobo","weight":2,"patronymes":["BENGALI/BANGALI","OUATTARA"]},{"source":"Senoufo","target":"Bwa","weight":1,"patronymes":["SANOGO"]},{"source":"Senoufo","target":"Dagara","weight":3,"patronymes":["BENGALI/BANGALI","DEMBELE","OUATTARA"]},{"source":"Senoufo","target":"Lobi","weight":2,"patronymes":["BENGALI/BANGALI","DEMBELE"]},{"source":"Senoufo","target":"Peul","weight":3,"patronymes":["COULBALY/COULIBALY/COU LOUBALY","DEMBELE","SANOGO"]}]};
 
-const DATA = {
-  groups: [
-    { id: "Mossi",       count: 264, type: "main" },
-    { id: "Bissa",       count: 95,  type: "main" },
-    { id: "Dagara",      count: 92,  type: "main" },
-    { id: "Gourmantché", count: 83,  type: "main" },
-    { id: "Bwaba/Bwa",   count: 59,  type: "main" },
-    { id: "San (Samo)",  count: 48,  type: "main" },
-    { id: "Gourounsi",   count: 40,  type: "main" },
-    { id: "Peul",        count: 37,  type: "main" },
-    { id: "Lobi",        count: 22,  type: "main" },
-    { id: "Birifor",     count: 14,  type: "main" },
-    { id: "Bobo",        count: 13,  type: "main" },
-    { id: "Senoufo",     count: 10,  type: "main" },
-    { id: "Cerma (Goin)",count: 8,   type: "main" },
-    { id: "Dafing",      count: 46,  type: "main" },
-  ],
-  subgroups: [
-    { id: "Mossi (Yadse)",     parent: "Mossi",  patronymes: 24 },
-    { id: "Mossi (Yorbmosse)", parent: "Mossi",  patronymes: 1  },
-    { id: "Peul (Jaawambe)",   parent: "Peul",   patronymes: 1  },
-  ],
-  // Links filtered to professor's groups only (both source and target must be in scope)
-  // Using data from the Patronyme Detail analysis
-  links: [
-    // Main group → main group links
-    { source: "Mossi",       target: "San (Samo)", weight: 171, patronymes: ["ANDOGONABA","BAGRE","BALMA","BANGRE","BEI","BELEMBOUDOU","BELEMSIGRI","BELEMWOURGOU","BEMBAMBA","BERE","BIGTOGO","BISSIGA","BOLOGO","BONKOUNGOU","BOUDA","COMPAORE","CONSEIGA","DEM","DIALGA","DIENDERE","DJIGUEMDE","GUIBILA","GUIELBEOGO","GUIGMA","ILBOUDO","KABORE","KAFANDO","KAGAMBEGA","KANGA","KENON","KIEMDE","KIENDREBEOGO","KINDA","KIOGO","KOLOGO","KONCOBO","KOROGO","KOUAMA","KOUGOUWINDIGA","KOUMSAGA","KOURAOGO","LEGUA","LESSEMBA","LOANGA","NABI","NACANABO","NACOULMA","NANA","NASRE","NIKIEMA","NYAMPA","OUBDA","OUEDA","OUEDRAOGO","OUIBGA","OUIYA","OULOUDOU","RAMDE","ROAMBA","ROMBA","RONGA","SAAGA","SALOUKA","SAM","SANDWIDI","SANE","SAYAOGO","SEBGO","SEDGHO","SEMDE","SILGA","SIMPORE","SINDEOGO","SONDO","SOUBEIGA","TAGO","TANAMA","TAOGO","TAPSOBA","TARBAGDO","TASSEMBEDO","TIROGO","TONDE","TOUGRI","VALIAN","WANGA","WOBGO","YAOGO","ZAGRE","ZAMBELOGO","ZANGRE","ZINABA","ZOEHINGA","ZOROM","ZOUBA","ZOUGMORE","ZOUMBRI","ZOUNDI","ZOUNGRANA"] },
-    { source: "San (Samo)",  target: "Mossi",      weight: 28,  patronymes: ["BAKY","BAYANE","BEITE","CONGO","DJENI","DJIBO","DRABO","FORGO","GO","GOLANE","KARAMBIRI","KI-ZERBO","KI/KY","KOBEANE","KONANE","KOUSSOUBE","LAMIZANA","PARE","SIA","SIENE","SO/SOW","SONDO","TEGUERA","TERI","TOPAN","WERMA","YAO","YELEMOU","ZALLA","ZAN","ZERBO"] },
-    { source: "Bissa",       target: "Mossi (Yadse)",  weight: 79,  patronymes: ["ABEA","ADANA","AZENWO","BALIMA","BAMA","BAMBARA","BAMBORE","BANCE","BANDAOGA","BARA","BATIEBO","BEM","BIDIGA","BILLA","BONSA","BOUSARE","BOUSSIM","DABONE","DENE","DIASSO","GABE","GALBANI","GAMBO","GAMENE","GANSANE","GARANGO","GNEGNE","GOUBA","GOULLA","GUEBRE","GUENGANE","KARENE","KOBRE","KODA","KOUDOUGOU","LAYO","LEGANI","LENGANE","LIMBA","LOURE","MABONE","MARE","MASSIM","NAME","NATIAGA","NIAORE","NOMBRE","NONNI","OUSSALE","SAGNE","SAMADOULGOU","SANGO","SARE","SEONE","SIMBRE","SIMBRI","SINKA","SIRA","SOULGANE","TARNAGDA","TAÏTA","WANDAOGO","YABRE","YAKA","YAMA","YANGANE","YANKINE","YAO","YARA","YIGO","ZAMPALIGRE","ZAMPOU","ZANE","ZANRE","ZELLE","ZIBARE","ZOUMBA","ZOURE"] },
-    { source: "Bissa",       target: "Gourounsi",  weight: 73,  patronymes: ["BALIMA","BAMBARA","BAMBORE","BANCE","BANDAOGA","BARA","BEM","BIDIGA","BILLA","BONSA","BOUNDANE","BOUSARE","BOUSSIM","DABONE","DENE","DIESSOMGO","GABE","GALBANI","GAMBO","GAMENE","GANSANE","GARANGO","GNEGNE","GOUBA","GOULLA","GUEBRE","GUENGANE","KARENE","KOBRE","KODA","KOUDOUGOU","LAYO","LEGANI","LENGANE","LIMBA","LOURE","MABONE","MARE","MASSIM","NAME","NIAORE","NOMBRE","NONNI","SAGNE","SAMADOULGOU","SAMBARE","SANGO","SARE","SEONE","SIMBRE","SIMBRI","SINKA","SIRA","SOULGANE","TARNAGDA","TAÏTA","WANDAOGO","YABRE","YAKA","YAMA","YANGANE","YANKINE","YAO","YARA","YIGO","ZAMPALIGRE","ZAMPOU","ZANE","ZANRE","ZELLE","ZIRGAMA","ZOUMBA","ZOURE"] },
-    { source: "Gourmantché", target: "Mossi (Yadse)",  weight: 60,  patronymes: ["BABOANGOU","BANGA","BANGOU","BASSA","BOURGOU","COMBARY","COULDIATY","DABINI","DAHANI","DAMBINA","DIABO","DIANOU","DIBOUGOU","DJOLGOU","GNINDIERGOU","GUIBGOU","GUIDA","HARO","IDANI","KANMOANI","KOADIMA","KOBORI","KOGDI","KOMONDI","KONDIA","KPABOAMBA","LOMPO","MANO","NADINGA","NAMOANO","NAMOUNTOUGOU","NASSOURI","NATALI","NATIA","NOUALI","ONADIA","OUALI","SADIO","SAGADOU","SANGLI","SOGLI","SOUABOU","TAMBORI","TAMBOUGOU","TAMPOUDI","TANDAMBA","TANI","TANLI","TANPANGA","THOMBIANO","TIAMBIGA","TINDANO","TINDOUM","TONPOUDI","WABOA","YONLI"] },
-    { source: "Bwaba/Bwa",   target: "Peul",       weight: 52,  patronymes: ["BADOUN","BAHOUN","BANI","BAYE","BICABA","BIHOUN","BOGNANA","BOGNINI","BOMBÈ","BONZI","BOUE","COULBALY","DAKUYO","DAYO","DOMOUA","FOFANA","GAO","GNANMBAHOUN","GNOUMOU","HABOU","HOUIN","KADEBA","KAHOUN","KAMBOUA","KAMI","KANI","KAZAWA","KERE","KIENOU","KINI","KOHO","KOHOUN","KONATE","KONDE","KOURA","LAMIEN","LIEHOUN","LOHOUARA","NAKOHOUN","OROKKUY","SABOUE","SAHO","SENI","TAMINI","TANI","TANOU","TIAHO","TIANHOUN","TIRA","TUINA","VIHO","YE"] },
-    { source: "Peul",        target: "Bwaba/Bwa",  weight: 14,  patronymes: ["BA","BANDE","BOLY","CISSE","DIA","DIABATE","DIALLO","DICKO","LY","NATAMA","NAYETTE","SOW","SY","TIAM"] },
-    { source: "Bwaba/Bwa",   target: "Dafing",     weight: 44,  patronymes: ["BADOUN","BAHOUN","BAYE","BICABA","BIHOUN","BOGNANA","BOGNINI","BOMBÈ","BONKIAN","BONZI","BOUE","DAKUYO","DAYO","DOMOUA","FAHO","FOFANA","GAO","GNOUMOU","HABOU","HOUIN","KADEBA","KAHOUN","KAMBOUA","KAMI","KAN","KIENOU","KINI","KOHO","KONATE","KONDE","LAMIEN","LIEHOUN","LOHOUARA","NAKOHOUN","OROKKUY","SABOUE","SAHO","TAMINI","TIAHO","TIANHOUN","TIRA","TUINA","VIHO","YE"] },
-    { source: "Dafing",      target: "Bwaba/Bwa",  weight: 31,  patronymes: ["BLAGNA","DAO","DEME","DISSA","FOFANA","GNAMBA","GNEME","GNIMIEN","GNISSIEN","GOUSSA","GUIRA","IRA","KARANTAO","KASSIA","KEBE","KIENOU","KOTE","KOUMARE","NIAMBA","SAKO","SARI","SERE","SERI","SIMBORO","WARI","WONNI","ZELA","ZINA","ZON","ZOROME","ZOUNGO"] },
-    { source: "Dafing",      target: "Peul",       weight: 23,  patronymes: ["BLAGNA","BOMBIRI","DABOU","DAO","DEME","DIABOUGA","DIABY-KASSAMBA","DIARRA","GNEME","GNIMIEN","GNISSIEN","GUIRA","IMIEN","IRA","KARA","KARANTAO","KIENOU","KONATE","KOUMARE","KOUYATE","ZELA","ZINA","ZON"] },
-    { source: "Dafing",      target: "Bobo",       weight: 20,  patronymes: ["BLAGNA","DEME","FOFANA","GNEME","GNIMIEN","GNISSIEN","GUIRA","IMIEN","KARANTAO","KASSIA","KIENOU","SERE","SERI","SOARE","TERA","WARI","WONNI","ZINA","ZOROME","ZOROMO"] },
-    { source: "Peul",        target: "Bobo",       weight: 20,  patronymes: ["BA","BANDE","BARRY","CISSE","DIA","DIABATE","DIALLO","DIANDE","DICKO","GAKO","HAIDARA","LY","NATAMA","NAYETTE","SANGO","SONDE","SOW","SY","TALL","TIAM"] },
-    { source: "Mossi",       target: "Peul",       weight: 27,  patronymes: ["BAMOGO","BARGO","ILBOUDO","KIENTGA","KINDO","KOLOGO","KOMBAMTENGA","KOROGO","LALSAGA","LESSEMBA","NACOULMA","NANA","NASSA","NIANSONGO","NIKIEMA","OUALBEOGO","PANATIGRI","SAM","SANFO","SAOURA","TEBDA","YOUGMA","ZOEHINGA","ZOMA","ZORE","ZOROM","ZOROME"] },
-    { source: "Peul",        target: "Mossi",      weight: 16,  patronymes: ["BA","BANDE","BARRY","CISSE","DIA","DIALLO","DIANDE","DICKO","GAKO","HAIDARA","LY","MASSA","SANGO","SONDE","SOW","TALL"] },
-    { source: "Gourounsi",   target: "Mossi",      weight: 22,  patronymes: ["AKOANDAMBOU","AZIKIBA","BADIEL","BAZIE","DADJOARI","DIABRI","DIAOUARI","DIYAMBA","DJIBOUGOU","FOURGA","GUENE","KERE","LANKOANDE","OUOBA","PISSIGA","SENI","SIEPAMMA","SOUOBOU","TOMONGA","WOBA","YABILI","ZIE"] },
-    { source: "Gourounsi",   target: "Bissa",      weight: 5,   patronymes: ["AKOANDAMBOU","AZIKIBA","BADIEL","BALA","BAZIE"] },
-    { source: "Gourmantché", target: "Mossi",      weight: 1,   patronymes: ["GOURMANTCHE-PAT"] },
-    { source: "Gourmantché", target: "Peul",       weight: 8,   patronymes: ["BANGA","MANO","NOULA","SOUABOU","TANI","TANOUBA","TINDOUM","YOLO"] },
-    { source: "San (Samo)",  target: "Peul",       weight: 4,   patronymes: ["BEITE","GO","GOROU","KI/KY"] },
-    { source: "Peul",        target: "San (Samo)", weight: 1,   patronymes: ["BIKIENGA"] },
-    { source: "San (Samo)",  target: "Bobo",       weight: 2,   patronymes: ["GO","GOROU"] },
-    { source: "Bobo",        target: "Peul",       weight: 11,  patronymes: ["COULBALY","DAMA","DIABATE","DIOMA","KIENOU","KONATE","MILLOGO","SANAO","SANOU","SOARA","SORA"] },
-    { source: "Bobo",        target: "Dafing",     weight: 8,   patronymes: ["DAMA","DIOMA","KIENOU","KONATE","SANAO","SANOU","SOARA","SORA"] },
-    { source: "Mossi",       target: "Gourmantché",weight: 7,   patronymes: ["BOLOGO","NACANABO","ROMBA","RONGA","SALOUKA","SOULE","ZALLE"] },
-    { source: "Mossi",       target: "Gourounsi",  weight: 8,   patronymes: ["DIMZOURE","KABRE","KARIGNAN","NIANSONGO","PARFARDNAM","SALOUKA","ZALLE","ZINSONI"] },
-    { source: "Mossi",       target: "Bissa",      weight: 2,   patronymes: ["GUIGMA","SALOUKA"] },
-    { source: "Dagara",      target: "Senoufo",    weight: 83 },
-    { source: "Dagara",      target: "Cerma (Goin)",weight: 80 },
-    { source: "Lobi",        target: "Cerma (Goin)",weight: 15,  patronymes: ["DIAO","DIBLONI","DIOLOMPO","DJORBIEL","GONGO","HIEN","KAMBOU","KAMBOULE","KANSIE","KIMPE","LANTA","MIJOUR","MONO","NOUFE","PALE"] },
-    { source: "Lobi",        target: "Dagara",     weight: 2,   patronymes: ["DIAO","TOU"] },
-    { source: "Bwaba/Bwa",   target: "Lobi",       weight: 10,  patronymes: ["BAYE","BOGNINI","BOMBÈ","DOMOUA","GAO","KADEBA","KAMBOUA","KANI","LAMIEN","LOHOUARA"] },
-    { source: "Senoufo",     target: "Dagara",     weight: 3,   patronymes: ["COULBALY","KONATE","SANOU"] },
-    { source: "Senoufo",     target: "Peul",       weight: 3,   patronymes: ["COULBALY","KONATE","SANOU"] },
-    { source: "Senoufo",     target: "Birifor",    weight: 2,   patronymes: ["COULBALY","KONATE"] },
-    { source: "Senoufo",     target: "Lobi",       weight: 2,   patronymes: ["COULBALY","SANOU"] },
-    { source: "Senoufo",     target: "Bobo",       weight: 2,   patronymes: ["COULBALY","SANOU"] },
-    { source: "Birifor",     target: "Senoufo",    weight: 3,   patronymes: ["KAMBOU","SOME","TOU"] },
-    { source: "Birifor",     target: "Cerma (Goin)",weight: 2,  patronymes: ["KAMBOU","TOU"] },
-    { source: "Dafing",      target: "Senoufo",    weight: 7,   patronymes: ["BLAGNA","DAO","DEME","GNEME","GUIRA","SERE","WONNI"] },
-    { source: "Dafing",      target: "Gourmantché",weight: 1,   patronymes: ["ZINA"] },
-    { source: "Gourounsi",   target: "Peul",       weight: 3,   patronymes: ["KODABO","WOBA","YARGA"] },
-    // Subgroup → main links
-    { source: "Mossi (Yadse)",     target: "Peul",       weight: 17, patronymes: ["BAGA","BAGUIAN","DERRA","GUIRO","KOANDA","KOCTY","MANDE","MOGMENGA","RABO","SAANI","SAKANDE","SIMIAN","SINNI","SORE","SORO","SOUGRI","TINTO"] },
-    { source: "Mossi (Yadse)",     target: "Gourmantché",weight: 2,  patronymes: ["KOANDA","SAANI"] },
-    { source: "Mossi (Yadse)",     target: "San (Samo)", weight: 7,  patronymes: ["KOANDA","RABO","SAKANDE","SIMIAN","SORE","SORO","TINTO"] },
-    { source: "Peul (Jaawambe)",   target: "Peul",       weight: 1,  patronymes: ["BOKOUM"] },
-  ]
+const CFG = {
+  nodeMinR:      30,
+  nodeMaxR:      95,
+  subMinR:       16,
+  subMaxR:       38,
+  linkMinW:      1.2,
+  linkMaxW:      6.5,
+  forceCharge:   -1100,
+  forceLinkDist: 280,
+  forceCollide:  1.30,
+  // Subgroups sit at this fraction of parent radius from parent center —
+  // partly inside parent, partly hanging out (so they read as nested).
+  subOrbit:      0.78,
 };
 
-// Map subgroup parent ids to main group ids
-const SUB_PARENT = {};
-DATA.subgroups.forEach(s => { SUB_PARENT[s.id] = s.parent; });
-
-const W = window.innerWidth, H = window.innerHeight - 78;
+const W = window.innerWidth, H = window.innerHeight;
 const svg  = d3.select("#viz").attr("width", W).attr("height", H);
 const root = svg.append("g");
-svg.call(d3.zoom().scaleExtent([0.05, 8]).on("zoom", e => root.attr("transform", e.transform)));
 
-// ─── ARROW MARKERS ───
+svg.call(d3.zoom().scaleExtent([0.08, 6]).on("zoom", e => root.attr("transform", e.transform)));
+
+// Arrow markers
 const defs = svg.append("defs");
-function mkArr(id, col) {
+function mkArrow(id, col) {
   defs.append("marker").attr("id", id)
     .attr("viewBox","0 -4 10 8").attr("refX",9).attr("refY",0)
     .attr("markerWidth",6).attr("markerHeight",6).attr("orient","auto")
-    .append("path").attr("d","M0,-4L10,0L0,4").attr("fill",col);
+    .append("path").attr("d","M0,-4L10,0L0,4").attr("fill", col);
 }
-mkArr("arr-b",  "rgba(26,58,92,0.7)");
-mkArr("arr-bh", "#1a3a5c");
-mkArr("arr-g",  "rgba(46,110,60,0.7)");
-mkArr("arr-gh", "#2e6e3c");
+mkArrow("arr-blue",    "rgba(44,79,130,0.65)");
+mkArrow("arr-blue-hi", "#2c4f82");
+mkArrow("arr-green",   "rgba(46,125,79,0.7)");
+mkArrow("arr-green-hi","#2e7d4f");
+mkArrow("arr-sub",     "rgba(184,83,30,0.65)");
+mkArrow("arr-sub-hi",  "#b8531e");
 
-// ─── SCALES ───
-const maxCount  = d3.max(DATA.groups, d => d.count);
-const rScale    = d3.scaleSqrt().domain([0,maxCount]).range([22, 80]);
-const maxWeight = d3.max(DATA.links, d => d.weight);
-const wScale    = d3.scaleLinear().domain([1,maxWeight]).range([1.2, 8]);
+// ── STATE ──
+let state = {
+  linkMode: "strong",
+  showPats: true,
+  sel1: null,
+  sel2: null,
+};
+let _data     = null;
+let _viz      = null;
+let mutualSet = new Set();
 
-const nodeR = {};
-DATA.groups.forEach(g => { nodeR[g.id] = rScale(g.count); });
-DATA.subgroups.forEach(s => { nodeR[s.id] = rScale(s.patronymes) * 0.7 + 12; });
+// ── BUILD ──
+build(_embeddedData);
 
-// ─── MUTUAL SET ───
-const linkKeys = new Set(DATA.links.map(l => l.source+"→"+l.target));
-const mutualSet = new Set();
-DATA.links.forEach(l => {
-  if (linkKeys.has(l.target+"→"+l.source)) mutualSet.add(l.source+"→"+l.target);
-});
+function build(data) {
+  _data = data;
 
-// ─── SIMULATION ───
-// All nodes: main groups + subgroups
-const mainNodes = DATA.groups.map(g => ({ ...g, r: nodeR[g.id], isSub: false }));
-const subNodes  = DATA.subgroups.map(s => ({ id: s.id, r: nodeR[s.id], isSub: true, parent: s.parent, patronymes: s.patronymes }));
-const allNodes  = [...mainNodes, ...subNodes];
-const nodeById  = Object.fromEntries(allNodes.map(n => [n.id, n]));
-
-// Links for simulation: only main→main (subgroup handled via parent link)
-const simLinks = DATA.links
-  .filter(l => nodeById[l.source] && nodeById[l.target])
-  .map(l => ({ ...l, source: nodeById[l.source], target: nodeById[l.target] }));
-
-// Subgroup → parent links for force (pull them together)
-const subParentLinks = subNodes.map(s => ({ source: nodeById[s.id], target: nodeById[s.parent], isSubLink: true }));
-
-const allForceLinks = [
-  ...simLinks.filter(l => !l.source.isSub && !l.target.isSub),
-  ...subParentLinks
-];
-
-const sim = d3.forceSimulation(allNodes)
-  .force("link", d3.forceLink(allForceLinks).id(d=>d.id)
-    .distance(l => l.isSubLink ? 70 : 240)
-    .strength(l => l.isSubLink ? 0.9 : 0.25))
-  .force("charge", d3.forceManyBody().strength(d => d.isSub ? -120 : -800))
-  .force("center", d3.forceCenter(W/2, H/2))
-  .force("collide", d3.forceCollide(d => d.r * 1.3 + 10));
-
-// ─── DRAW LAYERS ───
-const linkLayer = root.append("g");
-const connLayer = root.append("g"); // subgroup connector lines
-const nodeLayer = root.append("g");
-const subLayer  = root.append("g");
-const labelLayer= root.append("g");
-
-// Joking relation links (main→main only for now)
-const mainSimLinks = simLinks.filter(l => !l.source.isSub && !l.target.isSub);
-const subSimLinks  = simLinks.filter(l => l.source.isSub || l.target.isSub);
-
-function isMutual(l) {
-  return mutualSet.has(l.source.id+"→"+l.target.id);
-}
-
-// Main joking links
-const linkSel = linkLayer.selectAll(".jlink")
-  .data(mainSimLinks).join("line")
-  .attr("class","jlink faded")
-  .attr("stroke", l => isMutual(l) ? "rgba(46,110,60,0.55)" : "rgba(26,58,92,0.48)")
-  .attr("stroke-width", l => wScale(l.weight))
-  .attr("marker-end", l => isMutual(l) ? "url(#arr-g)" : "url(#arr-b)");
-
-const hitSel = linkLayer.selectAll(".jhit")
-  .data(mainSimLinks).join("line")
-  .attr("class","jhit")
-  .on("click",(e,l)=>{ e.stopPropagation(); selectPair(l.source.id, l.target.id); })
-  .on("mouseover",(e,l)=>showLinkTip(e,l))
-  .on("mouseout", hideTip);
-
-const wlblSel = linkLayer.selectAll(".wlbl")
-  .data(mainSimLinks.filter(l=>l.weight>=8)).join("text")
-  .attr("class","wlbl").attr("text-anchor","middle")
-  .attr("fill","var(--accent)").style("pointer-events","none")
-  .text(l=>l.weight);
-
-// Subgroup outgoing joking links
-const subLinkSel = linkLayer.selectAll(".jlink-sub")
-  .data(subSimLinks).join("line")
-  .attr("class","jlink faded")
-  .attr("stroke","rgba(139,58,46,0.55)")
-  .attr("stroke-width", l => wScale(l.weight) * 0.8)
-  .attr("marker-end","url(#arr-b)");
-
-// Subgroup connector lines (dashed, from parent circle edge to subgroup)
-const connSel = connLayer.selectAll(".sub-connector")
-  .data(subNodes).join("line")
-  .attr("class","sub-connector");
-
-// Main group circles
-const mainCircSel = nodeLayer.selectAll(".node-g")
-  .data(mainNodes).join("g").attr("class","node-g")
-  .call(d3.drag()
-    .on("start",(e,d)=>{if(!e.active)sim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y;})
-    .on("drag",(e,d)=>{d.fx=e.x;d.fy=e.y;})
-    .on("end",(e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null;}))
-  .on("click",(e,d)=>{e.stopPropagation();handleClick(d.id);})
-  .on("mouseover",(e,d)=>showNodeTip(e,d))
-  .on("mouseout",hideTip);
-
-mainCircSel.append("circle")
-  .attr("class","eth-ring")
-  .attr("r",d=>d.r);
-
-// Subgroup circles
-const subCircSel = subLayer.selectAll(".sub-g")
-  .data(subNodes).join("g").attr("class","sub-g")
-  .call(d3.drag()
-    .on("start",(e,d)=>{if(!e.active)sim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y;})
-    .on("drag",(e,d)=>{d.fx=e.x;d.fy=e.y;})
-    .on("end",(e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null;}))
-  .on("click",(e,d)=>{e.stopPropagation();handleClick(d.id);})
-  .on("mouseover",(e,d)=>showSubTip(e,d))
-  .on("mouseout",hideTip);
-
-subCircSel.append("circle").attr("class","sub-ring").attr("r",d=>d.r);
-
-subCircSel.append("text")
-  .attr("class","sub-lbl")
-  .style("font-size","9px")
-  .text(d=>d.id)
-  .each(function(d) {
-    const el = d3.select(this);
-    const parts = d.id.replace(/[()]/g,"").split(/\s+/);
-    if (parts.length > 2) {
-      el.text("");
-      const mid = Math.ceil(parts.length/2);
-      el.append("tspan").attr("x",0).attr("dy","-0.5em").text(parts.slice(0,mid).join(" "));
-      el.append("tspan").attr("x",0).attr("dy","1.1em").text(parts.slice(mid).join(" "));
-    }
+  // ── derived lookups ──────────────────────────────────────────────────────
+  const subParent = Object.fromEntries(data.subgroups.map(s => [s.id, s.parent]));
+  const isSub = id => id in subParent;
+  const topOf = id => subParent[id] || id;
+  // subgroups that exist (regardless of patronyme count) — they may still
+  // appear in links so we always render them.
+  const subsByParent = {};
+  data.subgroups.forEach(s => {
+    if (!subsByParent[s.parent]) subsByParent[s.parent] = [];
+    subsByParent[s.parent].push(s);
   });
 
-// Labels
-const mainLblSel = labelLayer.selectAll(".eth-lbl")
-  .data(mainNodes).join("text")
-  .attr("class","eth-lbl")
-  .style("font-size",d=>Math.min(d.r*0.25,13)+"px")
-  .attr("dy","-0.4em")
-  .text(d=>d.id);
+  // ── radius scales ────────────────────────────────────────────────────────
+  const maxEthCount = d3.max(data.ethnicities, e => e.count) || 1;
+  const rScaleEth   = d3.scaleSqrt().domain([0, maxEthCount]).range([CFG.nodeMinR, CFG.nodeMaxR]);
+  const maxSubCount = d3.max(data.subgroups, s => s.count) || 1;
+  const rScaleSub   = d3.scaleSqrt().domain([0, Math.max(maxSubCount, 5)]).range([CFG.subMinR, CFG.subMaxR]);
 
-const mainCntSel = labelLayer.selectAll(".eth-cnt")
-  .data(mainNodes).join("text")
-  .attr("class","eth-cnt")
-  .style("font-size",d=>Math.min(d.r*0.19,10)+"px")
-  .attr("dy","1em")
-  .text(d=>`n=${d.count}`);
+  const maxWeight = d3.max(data.links, l => l.weight) || 1;
+  const wScale    = d3.scaleLinear().domain([1, maxWeight]).range([CFG.linkMinW, CFG.linkMaxW]);
 
-// ─── TICK ───
-function edgePt(src, tgt, rOffset=0) {
-  const dx=tgt.x-src.x, dy=tgt.y-src.y, dist=Math.sqrt(dx*dx+dy*dy)||1;
-  const r1=(nodeR[src.id]||30)+3, r2=(nodeR[tgt.id]||30)+rOffset+9;
-  return { x1:src.x+dx/dist*r1, y1:src.y+dy/dist*r1, x2:tgt.x-dx/dist*r2, y2:tgt.y-dy/dist*r2 };
-}
+  // ── ALL nodes (top-level + subgroups) ────────────────────────────────────
+  const ethNodes = data.ethnicities.map(e => ({
+    id: e.id, count: e.count, kind: "eth", r: rScaleEth(e.count),
+  }));
+  const ethById = Object.fromEntries(ethNodes.map(n => [n.id, n]));
 
-function connEdge(parent, sub) {
-  const dx=sub.x-parent.x, dy=sub.y-parent.y, dist=Math.sqrt(dx*dx+dy*dy)||1;
-  const r1=(nodeR[parent.id]||30), r2=(nodeR[sub.id]||18);
-  return { x1:parent.x+dx/dist*r1, y1:parent.y+dy/dist*r1, x2:sub.x-dx/dist*r2, y2:sub.y-dy/dist*r2 };
-}
+  const subNodes = data.subgroups.map(s => ({
+    id: s.id, count: s.count, kind: "sub", r: rScaleSub(s.count),
+    parent: s.parent, parentNode: ethById[s.parent], patronymes: s.patronymes || [],
+  }));
+  const subById = Object.fromEntries(subNodes.map(n => [n.id, n]));
+  const nodeById = { ...ethById, ...subById };
 
-sim.on("tick",()=>{
-  linkSel.each(function(l){
-    const e=edgePt(l.source,l.target);
-    d3.select(this).attr("x1",e.x1).attr("y1",e.y1).attr("x2",e.x2).attr("y2",e.y2);
-  });
-  hitSel.each(function(l){
-    const e=edgePt(l.source,l.target);
-    d3.select(this).attr("x1",e.x1).attr("y1",e.y1).attr("x2",e.x2).attr("y2",e.y2);
-  });
-  subLinkSel.each(function(l){
-    const e=edgePt(l.source,l.target,6);
-    d3.select(this).attr("x1",e.x1).attr("y1",e.y1).attr("x2",e.x2).attr("y2",e.y2);
-  });
-  wlblSel.attr("x",l=>(l.source.x+l.target.x)/2).attr("y",l=>(l.source.y+l.target.y)/2-7);
-
-  mainCircSel.attr("transform",d=>`translate(${d.x},${d.y})`);
-  subCircSel.attr("transform",d=>`translate(${d.x},${d.y})`);
-
-  connSel.each(function(s){
-    const par = nodeById[s.parent];
-    if (!par) return;
-    const e=connEdge(par,s);
-    d3.select(this).attr("x1",e.x1).attr("y1",e.y1).attr("x2",e.x2).attr("y2",e.y2);
-  });
-
-  mainLblSel.attr("x",d=>d.x).attr("y",d=>d.y);
-  mainCntSel.attr("x",d=>d.x).attr("y",d=>d.y);
-});
-
-svg.on("click",()=>clearSel());
-
-document.getElementById("subtitle").textContent =
-  `${DATA.groups.length} groups · ${DATA.subgroups.length} subgroups · ${DATA.links.length} joking relations`;
-
-// ─── STATE / SELECTION ───
-let state = { mode:"sel", sel1:null, sel2:null };
-let panelCtx = null, activeTab = "fwd";
-
-function handleClick(id) {
-  if (!state.sel1) { state.sel1=id; }
-  else if (state.sel1===id) { clearSel(); return; }
-  else if (!state.sel2) { state.sel2=id; openPanel(state.sel1,state.sel2); }
-  else { state.sel1=id; state.sel2=null; closePanel(); }
-  updateBar(); applyVis();
-}
-
-function selectPair(a,b) {
-  state.sel1=a; state.sel2=b; updateBar(); applyVis(); openPanel(a,b);
-}
-
-function clearSel() {
-  state.sel1=null; state.sel2=null; closePanel(); updateBar(); applyVis();
-}
-
-function updateBar() {
-  const s=document.getElementById("bar-status");
-  const cb=document.getElementById("clear-btn");
-  if (!state.sel1) { s.innerHTML=`<span>Nothing selected</span>`; cb.classList.remove("show"); }
-  else if (!state.sel2) { s.innerHTML=`<strong>${state.sel1}</strong> <span>— click a second group</span>`; cb.classList.add("show"); }
-  else { s.innerHTML=`<strong>${state.sel1}</strong> <span>↔</span> <strong>${state.sel2}</strong>`; cb.classList.add("show"); }
-}
-
-function topOf(id) { return SUB_PARENT[id] || id; }
-
-function applyVis() {
-  const { mode, sel1, sel2 } = state;
-  const top1 = sel1 ? topOf(sel1) : null;
-  const top2 = sel2 ? topOf(sel2) : null;
-
-  function isActive(l) {
-    if (mode==="strong" && l.weight < 5) return false;
-    const s = l.source.id||l.source, t = l.target.id||l.target;
-    if (sel1 && sel2) return (s===sel1&&t===sel2)||(s===sel2&&t===sel1)||(s===top1&&t===top2)||(s===top2&&t===top1);
-    if (sel1) return s===sel1||t===sel1||s===top1||t===top1;
-    return true;
-  }
-
-  linkSel.style("opacity", l => {
-    if (!isActive(l)) return sel1 ? 0 : (mode==="sel" ? 0.07 : 0.12);
-    return 1;
-  }).classed("dim", l => sel1&&sel2&&!isActive(l));
-
-  subLinkSel.style("opacity", l => {
-    if (!isActive(l)) return sel1 ? 0 : 0.10;
-    return 0.85;
-  });
-
-  hitSel.style("pointer-events", l => isActive(l) ? "stroke" : "none");
-
-  const activeN = sel1 ? new Set() : null;
-  if (activeN) {
-    [].concat(mainSimLinks, subSimLinks).forEach(l => {
-      if (isActive(l)) { activeN.add(l.source.id); activeN.add(l.target.id); }
+  // assign each subgroup an angle slot around its parent based on the
+  // average direction of its outgoing/incoming external connections (we
+  // approximate it cheaply by enumerating connected ethnic groups).
+  const initAngles = {};
+  Object.entries(subsByParent).forEach(([parent, subs]) => {
+    subs.forEach((s, i) => {
+      // simple even spacing — gets refined live via tick
+      const ang = (i / subs.length) * Math.PI * 2 - Math.PI/2;
+      initAngles[s.id] = ang;
     });
-    if (sel1) activeN.add(sel1);
-    if (sel2) activeN.add(sel2);
-    if (top1) activeN.add(top1);
-    if (top2) activeN.add(top2);
-    // Add parent of selected sub
-    if (sel1 && SUB_PARENT[sel1]) activeN.add(SUB_PARENT[sel1]);
-    if (sel2 && SUB_PARENT[sel2]) activeN.add(SUB_PARENT[sel2]);
+  });
+  subNodes.forEach(n => { n.angle = initAngles[n.id] ?? 0; });
+
+  // ── mutual / link index ──────────────────────────────────────────────────
+  const linkKeySet = new Set(data.links.map(l => l.source + "→" + l.target));
+  data.links.forEach(l => {
+    const k = l.source + "→" + l.target;
+    if (linkKeySet.has(l.target + "→" + l.source)) mutualSet.add(k);
+  });
+
+  // ── force simulation ─────────────────────────────────────────────────────
+  // Only top-level eth-eth links participate in physics — subgroup-involved
+  // links are drawn after the fact.
+  const ethEthLinks = data.links
+    .filter(l => !isSub(l.source) && !isSub(l.target) && nodeById[l.source] && nodeById[l.target])
+    .map(l => ({ ...l, source: nodeById[l.source], target: nodeById[l.target] }));
+  // Stagger mutual eth-eth pairs so the two directions don't overlap.
+  const ethSeen = new Set();
+  ethEthLinks.forEach(l => {
+    const k  = l.source.id + "→" + l.target.id;
+    const rk = l.target.id + "→" + l.source.id;
+    l.curveSign = ethSeen.has(rk) ? -1 : 1;
+    ethSeen.add(k);
+  });
+
+  const sim = d3.forceSimulation(ethNodes)
+    .force("link",    d3.forceLink(ethEthLinks).id(d=>d.id).distance(CFG.forceLinkDist).strength(0.3))
+    .force("charge",  d3.forceManyBody().strength(CFG.forceCharge))
+    .force("center",  d3.forceCenter(W/2, H/2))
+    .force("collide", d3.forceCollide(d => d.r * CFG.forceCollide + 26));
+
+  // ── DRAW ─────────────────────────────────────────────────────────────────
+  // Rendering layers (z-order):
+  //   linkLayer  → ethnic-only links (under everything)
+  //   nodeLayer  → ethnic-group circles
+  //   subTetherLayer → faint dashed line from subgroup center to parent center
+  //   subLinkLayer → links touching at least one subgroup (drawn ON TOP of parents)
+  //   subLayer   → subgroup circles (on top of everything)
+  //   patLayer   → tiny patronyme dots around eth-group rim
+  //   labelLayer → text labels
+
+  const linkLayer    = root.append("g").attr("class","link-layer");
+  const nodeLayer    = root.append("g").attr("class","node-layer");
+  const patLayer     = root.append("g").attr("class","pat-layer");
+  const subTetherLayer = root.append("g").attr("class","sub-tether-layer");
+  const subLinkLayer = root.append("g").attr("class","sub-link-layer");
+  const subLayer     = root.append("g").attr("class","sub-layer");
+  const labelLayer   = root.append("g").attr("class","label-layer");
+
+  // ── eth-eth links (paths so we can curve mutuals) ──
+  const linkSel = linkLayer.selectAll(".link")
+    .data(ethEthLinks).join("path")
+    .attr("class","link faded")
+    .attr("stroke", d => mutualSet.has(d.source.id+"→"+d.target.id) ? "rgba(46,125,79,0.55)" : "rgba(44,79,130,0.45)")
+    .attr("stroke-width", d => wScale(d.weight))
+    .attr("marker-end", d => mutualSet.has(d.source.id+"→"+d.target.id) ? "url(#arr-green)" : "url(#arr-blue)");
+
+  const hitSel = linkLayer.selectAll(".link-hitarea")
+    .data(ethEthLinks).join("path")
+    .attr("class","link-hitarea")
+    .on("click", (e,d) => { e.stopPropagation(); openLinkPanel(d.source.id, d.target.id); })
+    .on("mouseover", (e,d) => showLinkTip(e,d))
+    .on("mouseout",  hideTip);
+
+  const wlabelSel = linkLayer.selectAll(".wlabel")
+    .data(ethEthLinks.filter(d=>d.weight>=10)).join("text")
+    .attr("class","wlabel").attr("text-anchor","middle")
+    .attr("fill","var(--accent)").style("pointer-events","none")
+    .text(d=>d.weight);
+
+  // ── subgroup links (anything touching a subgroup ID) ──
+  const subRelatedLinks = data.links
+    .filter(l => isSub(l.source) || isSub(l.target))
+    .filter(l => nodeById[l.source] && nodeById[l.target])
+    .map(l => ({
+      ...l,
+      sourceNode: nodeById[l.source],
+      targetNode: nodeById[l.target],
+      isInternal: isSub(l.source) && isSub(l.target) && topOf(l.source)===topOf(l.target)
+                  || (isSub(l.source) && l.target===topOf(l.source))
+                  || (isSub(l.target) && l.source===topOf(l.target)),
+    }));
+  // Give mutual sub-links opposite curve sides so they don't overlap.
+  // Also stagger same-source links a little.
+  const subKeySeen = new Set();
+  subRelatedLinks.forEach(l => {
+    const k  = l.source + "→" + l.target;
+    const rk = l.target + "→" + l.source;
+    if (subKeySeen.has(rk)) l.curveSign = -1;
+    else                    l.curveSign = 1;
+    subKeySeen.add(k);
+  });
+
+  const subLinkSel = subLinkLayer.selectAll(".link.sublink")
+    .data(subRelatedLinks).join("path")
+    .attr("class","link sublink faded")
+    .attr("stroke", "var(--sub-link)")
+    .attr("stroke-width", d => wScale(d.weight))
+    .attr("marker-end", "url(#arr-sub)");
+
+  const subLinkHitSel = subLinkLayer.selectAll(".link-hitarea.sublink")
+    .data(subRelatedLinks).join("path")
+    .attr("class","link-hitarea sublink")
+    .on("click", (e,d) => { e.stopPropagation(); openLinkPanel(d.sourceNode.id, d.targetNode.id); })
+    .on("mouseover", (e,d) => showLinkTip(e, { source:d.sourceNode, target:d.targetNode, weight:d.weight }))
+    .on("mouseout",  hideTip);
+
+  const subWLabelSel = subLinkLayer.selectAll(".wlabel.sublink")
+    .data(subRelatedLinks.filter(d=>d.weight>=4)).join("text")
+    .attr("class","wlabel sublink").attr("text-anchor","middle")
+    .attr("fill","var(--sub-col)").style("pointer-events","none")
+    .text(d=>d.weight);
+
+  // ── ethnic-group circles ──
+  const nodeSel = nodeLayer.selectAll(".node-g")
+    .data(ethNodes).join("g").attr("class","node-g")
+    .call(d3.drag()
+      .on("start",(e,d)=>{if(!e.active)sim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y;})
+      .on("drag", (e,d)=>{d.fx=e.x;d.fy=e.y;})
+      .on("end",  (e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null;}))
+    .on("click",     (e,d)=>{ e.stopPropagation(); handleNodeClick(d.id); })
+    .on("mouseover", (e,d)=>showNodeTip(e,d))
+    .on("mouseout",  hideTip);
+
+  nodeSel.append("circle")
+    .attr("class","ethnic-ring")
+    .attr("r", d=>d.r)
+    .attr("fill","var(--node-fill)")
+    .attr("stroke","var(--node-str)");
+
+  // ── subgroup tether (parent center → subgroup center) ──
+  const tetherSel = subTetherLayer.selectAll(".sub-tether")
+    .data(subNodes).join("line")
+    .attr("class","sub-tether");
+
+  // ── subgroup circles ──
+  const subSel = subLayer.selectAll(".sub-g")
+    .data(subNodes).join("g").attr("class","sub-g")
+    .style("cursor","pointer")
+    .on("click",     (e,d)=>{ e.stopPropagation(); handleNodeClick(d.id); })
+    .on("mouseover", (e,d)=>showSubTip(e,d))
+    .on("mouseout",  hideTip);
+
+  subSel.append("circle")
+    .attr("class","sub-circle")
+    .attr("r", d=>d.r)
+    .attr("fill","var(--sub-fill)")
+    .attr("stroke","var(--sub-col)");
+
+  subSel.append("text")
+    .attr("class","sub-label-text")
+    .style("font-size", d => Math.min(Math.max(d.r * 0.30, 8), 11) + "px")
+    .each(function(d) {
+      const el = d3.select(this);
+      // Strip "Mossi (" / "Peul (" prefix to keep it short
+      let label = d.id.replace(/^[^(]+\(/, '').replace(/\)$/, '');
+      // capitalise first letter
+      label = label.charAt(0).toUpperCase() + label.slice(1);
+      el.text(label);
+    });
+
+  // ── patronyme dots around top-level rim ──
+  const patDots  = [];
+  const subPatsByParent = {};
+  data.subgroups.forEach(s => {
+    if (!subPatsByParent[s.parent]) subPatsByParent[s.parent] = new Set();
+    (s.patronymes||[]).forEach(p => subPatsByParent[s.parent].add(p));
+  });
+  data.ethnicities.forEach(eth => {
+    const node = ethById[eth.id];
+    const pats = data.patronymes[eth.id] || [];
+    const R    = node.r;
+    const subPs= subPatsByParent[eth.id] || new Set();
+    pats.forEach((pat,i) => {
+      const isSubP = subPs.has(pat);
+      patDots.push({ pat, ethId: eth.id, isSub:isSubP, angle:(i/pats.length)*2*Math.PI, ringR: R*0.90, node });
+    });
+  });
+
+  const dotSel = patLayer.selectAll(".pat-dot")
+    .data(patDots).join("circle")
+    .attr("class","pat-dot")
+    .attr("r",2.4)
+    .attr("fill", d => d.isSub ? "var(--sub-col)" : "var(--node-str)")
+    .attr("opacity", d => d.isSub ? 0.65 : 0.40);
+
+  // ── eth labels ──
+  const labelSel = labelLayer.selectAll(".eth-label")
+    .data(ethNodes).join("text")
+    .attr("class","eth-label")
+    .style("font-size", d => Math.min(d.r*0.24, 14)+"px")
+    .attr("dy", "-0.45em")
+    .text(d=>d.id);
+
+  const countSel = labelLayer.selectAll(".eth-count")
+    .data(ethNodes).join("text")
+    .attr("class","eth-count")
+    .style("font-size", d => Math.min(d.r*0.18, 10)+"px")
+    .attr("dy", "0.95em")
+    .text(d=>`n=${d.count}`);
+
+  // ── HELPERS for path geometry ──
+  // straight edge-to-edge between two nodes (with their radii)
+  function edgeLineD(s, t, padS=4, padT=10) {
+    const dx=t.x-s.x, dy=t.y-s.y, dist=Math.sqrt(dx*dx+dy*dy)||1;
+    const r1=(s.r||30)+padS, r2=(t.r||30)+padT;
+    const x1=s.x+dx/dist*r1, y1=s.y+dy/dist*r1;
+    const x2=t.x-dx/dist*r2, y2=t.y-dy/dist*r2;
+    return `M${x1},${y1}L${x2},${y2}`;
+  }
+  // Mild quadratic curve between two non-overlapping nodes — useful for
+  // mutual relations so the two directions don't overlap.
+  function arcPath(s, t, bulge=14, padS=4, padT=10) {
+    const dx=t.x-s.x, dy=t.y-s.y, dist=Math.sqrt(dx*dx+dy*dy)||1;
+    const r1=(s.r||30)+padS, r2=(t.r||30)+padT;
+    const ux=dx/dist, uy=dy/dist;
+    const x1=s.x+ux*r1, y1=s.y+uy*r1;
+    const x2=t.x-ux*r2, y2=t.y-uy*r2;
+    const mx=(x1+x2)/2, my=(y1+y2)/2;
+    const px=-uy, py=ux;
+    return `M${x1},${y1}Q${mx+px*bulge},${my+py*bulge} ${x2},${y2}`;
+  }
+  // "Bow" arc — endpoints sit on the perpendicular sides of the two circles,
+  // and the curve sweeps OUTSIDE both nodes regardless of overlap. This is
+  // what makes a subgroup→parent arrow legible: it loops out past the parent
+  // boundary instead of disappearing inside it.
+  function bowPath(s, t, sign=1) {
+    const dx=t.x-s.x, dy=t.y-s.y, dist=Math.sqrt(dx*dx+dy*dy)||1;
+    const ux=dx/dist, uy=dy/dist;
+    const px=-uy*sign, py=ux*sign;
+    const sR=(s.r||30), tR=(t.r||30);
+    // tangent-style start/end (perpendicular side of each circle)
+    const x1=s.x+px*sR, y1=s.y+py*sR;
+    const x2=t.x+px*tR, y2=t.y+py*tR;
+    // control point pushed further out perpendicular so arc clears both circles
+    const mx=(x1+x2)/2, my=(y1+y2)/2;
+    const offset = Math.max(sR, tR) * 0.55 + 18;
+    return `M${x1},${y1}Q${mx+px*offset},${my+py*offset} ${x2},${y2}`;
+  }
+  // Decide which sub-related links should use bowPath (overlapping pair)
+  // vs a plain edge line (non-overlapping).
+  function subPath(d, sign) {
+    const s=d.sourceNode, t=d.targetNode;
+    const dx=t.x-s.x, dy=t.y-s.y, dist=Math.sqrt(dx*dx+dy*dy)||1;
+    if (dist < (s.r||0) + (t.r||0) + 6) return bowPath(s, t, sign);
+    // non-overlapping subgroup link: use a slight quadratic arc to nudge
+    // it clear of any parent circle that might sit between endpoints.
+    return arcPath(s, t, 18 * sign, 4, 10);
   }
 
-  mainCircSel.select(".eth-ring")
-    .classed("sel", d => d.id===sel1||d.id===sel2)
-    .classed("dim", d => !!activeN && !activeN.has(d.id));
+  // ── TICK ──────────────────────────────────────────────────────────────────
+  sim.on("tick", () => {
+    // Position subgroups relative to parent.
+    subNodes.forEach(n => {
+      const p = n.parentNode;
+      if (!p) return;
+      const orbit = (p.r || 30) * CFG.subOrbit;
+      n.x = (p.x || 0) + Math.cos(n.angle) * orbit;
+      n.y = (p.y || 0) + Math.sin(n.angle) * orbit;
+    });
 
-  subCircSel.select(".sub-ring")
-    .classed("sel", d => d.id===sel1||d.id===sel2)
-    .classed("dim", d => !!activeN && !activeN.has(d.id));
+    // eth-eth links — straight line if not mutual, opposite arcs if mutual
+    linkSel.attr("d",  d => mutualSet.has(d.source.id+"→"+d.target.id)
+                           ? arcPath(d.source, d.target, 16 * (d.curveSign||1))
+                           : edgeLineD(d.source, d.target));
+    hitSel .attr("d",  d => mutualSet.has(d.source.id+"→"+d.target.id)
+                           ? arcPath(d.source, d.target, 16 * (d.curveSign||1))
+                           : edgeLineD(d.source, d.target));
+    wlabelSel
+      .attr("x", d => (d.source.x+d.target.x)/2)
+      .attr("y", d => (d.source.y+d.target.y)/2 - 6);
 
-  mainLblSel.classed("dim", d => !!activeN && !activeN.has(d.id));
-  mainCntSel.classed("dim", d => !!activeN && !activeN.has(d.id));
-  subCircSel.select(".sub-lbl").classed("dim", d => !!activeN && !activeN.has(d.id));
+    // sublinks (always use a path; bow arc when source/target overlap)
+    subLinkSel.attr("d", d => subPath(d, d.curveSign || 1));
+    subLinkHitSel.attr("d", d => subPath(d, d.curveSign || 1));
+    subWLabelSel
+      .attr("x", d => (d.sourceNode.x+d.targetNode.x)/2)
+      .attr("y", d => (d.sourceNode.y+d.targetNode.y)/2 - 6);
 
-  connSel.classed("dim", d => !!activeN && !activeN.has(d.id) && !activeN.has(d.parent));
+    nodeSel.attr("transform", d => `translate(${d.x},${d.y})`);
+    subSel .attr("transform", d => `translate(${d.x},${d.y})`);
+    tetherSel
+      .attr("x1", d => d.parentNode ? d.parentNode.x : 0)
+      .attr("y1", d => d.parentNode ? d.parentNode.y : 0)
+      .attr("x2", d => d.x)
+      .attr("y2", d => d.y);
 
-  wlblSel.style("opacity", l => isActive(l) ? 1 : 0);
+    dotSel
+      .attr("cx", d => d.node.x + Math.cos(d.angle)*d.ringR)
+      .attr("cy", d => d.node.y + Math.sin(d.angle)*d.ringR);
+
+    labelSel.attr("x", d=>d.x).attr("y", d=>d.y);
+    countSel.attr("x", d=>d.x).attr("y", d=>d.y);
+  });
+
+  svg.on("click", () => clearSelection());
+
+  _viz = { linkSel, hitSel, wlabelSel,
+           subLinkSel, subLinkHitSel, subWLabelSel,
+           nodeSel, subSel, tetherSel, dotSel, labelSel, countSel,
+           ethEthLinks, subRelatedLinks,
+           subParent, isSub, topOf };
+
+  // ── subtitle ──
+  const totalPats = Object.values(data.patronymes).reduce((a,b)=>a+b.length,0);
+  document.getElementById("subtitle").textContent =
+    `${data.ethnicities.length} ethnic groups · ${data.subgroups.length} subgroups · `+
+    `${data.links.length} joking relations · ${totalPats} patronymes`;
+
+  applyVisibility();
 }
 
-function setMode(m) {
-  state.mode=m;
-  ["sel","all","strong"].forEach(k=>document.getElementById("btn-"+k).classList.toggle("on",k===m));
-  applyVis();
-}
+// ── INTERACTION LOGIC ─────────────────────────────────────────────────────────
 
-// ─── PANEL ───
-function openPanel(id1, id2) {
-  panelCtx = {id1,id2}; activeTab="fwd";
-  const top1=topOf(id1), top2=topOf(id2);
-  const fwd = DATA.links.find(l=>l.source===id1&&l.target===id2) || DATA.links.find(l=>l.source===top1&&l.target===top2);
-  const rev = DATA.links.find(l=>l.source===id2&&l.target===id1) || DATA.links.find(l=>l.source===top2&&l.target===top1);
-  const mut = !!(fwd&&rev);
-
-  let isSub = id1 in SUB_PARENT || id2 in SUB_PARENT;
-  let titleSuffix = isSub ? ` <span class="sbadge">SUBGROUP</span>` : "";
-  document.getElementById("pt").innerHTML = `${id1}  ↔  ${id2}${titleSuffix}`;
-
-  let meta="";
-  if (!fwd&&!rev) { meta=`<em>No recorded joking relation</em> between these two groups.`; }
-  else {
-    if (fwd) meta+=`<strong>${id1} → ${id2}:</strong> <em>${fwd.weight}</em> patronyme${fwd.weight>1?"s":""}<br>`;
-    if (rev) meta+=`<strong>${id2} → ${id1}:</strong> <em>${rev.weight}</em> patronyme${rev.weight>1?"s":""}<br>`;
-    if (mut) meta+=`<span class="mbadge">✓ Mutual</span>`;
+function handleNodeClick(id) {
+  if (!state.sel1) {
+    state.sel1 = id;
+  } else if (state.sel1 === id) {
+    clearSelection(); return;
+  } else if (!state.sel2) {
+    state.sel2 = id;
+    openRelationPanel(state.sel1, state.sel2);
+  } else {
+    state.sel1 = id;
+    state.sel2 = null;
+    closePanel();
   }
-  document.getElementById("pm").innerHTML=meta;
+  updateModeBar();
+  applyVisibility();
+}
 
-  const tfwd=document.getElementById("tab-fwd"), trev=document.getElementById("tab-rev");
-  tfwd.textContent = fwd ? `→ ${id1}→${id2} (${fwd.weight})` : `→ No forward`;
-  trev.textContent = rev ? `← ${id2}→${id1} (${rev.weight})` : `← No reverse`;
-  trev.classList.toggle("hidden",!rev);
+function clearSelection() {
+  state.sel1 = null; state.sel2 = null;
+  closePanel();
+  updateModeBar();
+  applyVisibility();
+}
 
-  if (fwd) switchTab("fwd"); else if (rev) switchTab("rev");
-  else document.getElementById("pb").innerHTML=`<p style="padding:18px;color:var(--muted);font-size:12px">No joking relation recorded.</p>`;
+function updateModeBar() {
+  const s = document.getElementById("mode-status");
+  const cb = document.getElementById("clear-btn");
+  if (!state.sel1) {
+    s.innerHTML = `<span>Nothing selected</span>`;
+    cb.classList.remove("show");
+  } else if (!state.sel2) {
+    s.innerHTML = `<strong>${state.sel1}</strong> <span>— click a second circle</span>`;
+    cb.classList.add("show");
+  } else {
+    s.innerHTML = `<strong>${state.sel1}</strong> <span>↔</span> <strong>${state.sel2}</strong>`;
+    cb.classList.add("show");
+  }
+}
+
+// ── VISIBILITY ────────────────────────────────────────────────────────────────
+
+function applyVisibility() {
+  if (!_viz) return;
+  const v = _viz;
+  const { sel1, sel2, linkMode } = state;
+
+  const involves = (l, id) => l.source.id===id || l.target.id===id
+                   || (l.sourceNode && (l.sourceNode.id===id || l.targetNode.id===id));
+
+  const isActiveEthLink = l => {
+    if (linkMode === "strong" && l.weight < 5) return false;
+    if (sel1 && sel2) return (l.source.id===sel1&&l.target.id===sel2)||(l.source.id===sel2&&l.target.id===sel1);
+    if (sel1) return involves(l, sel1);
+    return true;
+  };
+  const isActiveSubLink = l => {
+    if (linkMode === "strong" && l.weight < 5) return false;
+    const s=l.sourceNode.id, t=l.targetNode.id;
+    if (sel1 && sel2) return (s===sel1&&t===sel2)||(s===sel2&&t===sel1);
+    if (sel1) return s===sel1||t===sel1;
+    return true;
+  };
+
+  v.linkSel
+    .classed("dim",     l => sel1&&sel2 && !isActiveEthLink(l))
+    .classed("faded",   l => !(sel1&&sel2) && (linkMode==="selected"||!isActiveEthLink(l)) && !(sel1&&isActiveEthLink(l)))
+    .classed("visible", l => isActiveEthLink(l))
+    .style("opacity",   l => {
+      if (!isActiveEthLink(l)) return sel1 ? 0 : (linkMode==="all"||linkMode==="strong" ? 0.13 : 0);
+      return 1;
+    });
+  v.hitSel
+    .classed("dim", l => !isActiveEthLink(l))
+    .style("pointer-events", l => isActiveEthLink(l) ? "stroke" : "none");
+
+  v.subLinkSel
+    .classed("dim",     l => sel1&&sel2 && !isActiveSubLink(l))
+    .classed("faded",   l => !(sel1&&sel2) && (linkMode==="selected"||!isActiveSubLink(l)) && !(sel1&&isActiveSubLink(l)))
+    .classed("visible", l => isActiveSubLink(l))
+    .style("opacity",   l => {
+      if (!isActiveSubLink(l)) return sel1 ? 0 : (linkMode==="all"||linkMode==="strong" ? 0.18 : 0);
+      return 1;
+    })
+    .attr("stroke",      l => isActiveSubLink(l) && (sel1||sel2) ? "var(--sub-link-hi)" : "var(--sub-link)")
+    .attr("marker-end",  l => isActiveSubLink(l) && (sel1||sel2) ? "url(#arr-sub-hi)" : "url(#arr-sub)");
+  v.subLinkHitSel
+    .classed("dim", l => !isActiveSubLink(l))
+    .style("pointer-events", l => isActiveSubLink(l) ? "stroke" : "none");
+
+  v.wlabelSel.style("opacity",   l => isActiveEthLink(l) ? 1 : 0);
+  v.subWLabelSel.style("opacity",l => isActiveSubLink(l) ? 1 : 0);
+
+  // Selection highlights
+  // What counts as "active" (un-dimmed) when something is selected?
+  let activeNodeIds = null;
+  if (sel1) {
+    activeNodeIds = new Set([sel1]);
+    if (sel2) activeNodeIds.add(sel2);
+    // include linked nodes (use eth + sub links)
+    v.ethEthLinks.forEach(l => {
+      if (isActiveEthLink(l)) { activeNodeIds.add(l.source.id); activeNodeIds.add(l.target.id); }
+    });
+    v.subRelatedLinks.forEach(l => {
+      if (isActiveSubLink(l)) { activeNodeIds.add(l.sourceNode.id); activeNodeIds.add(l.targetNode.id); }
+    });
+    // Also include parents of any active subgroup so the parent ring stays visible
+    activeNodeIds.forEach(id => {
+      if (v.subParent[id]) activeNodeIds.add(v.subParent[id]);
+    });
+  }
+  const dimmedIds = id => activeNodeIds && !activeNodeIds.has(id);
+
+  v.nodeSel.select(".ethnic-ring")
+    .classed("selected", d => d.id===sel1||d.id===sel2)
+    .classed("dim",      d => !!dimmedIds(d.id));
+  v.subSel.select(".sub-circle")
+    .classed("selected", d => d.id===sel1||d.id===sel2)
+    .classed("dim",      d => !!dimmedIds(d.id));
+  v.subSel.select(".sub-label-text").classed("dim", d => !!dimmedIds(d.id));
+  v.tetherSel.classed("dim", d => !!dimmedIds(d.id) && !!dimmedIds(d.parent));
+  v.labelSel.classed("dim", d => !!dimmedIds(d.id));
+  v.countSel.classed("dim", d => !!dimmedIds(d.id));
+  v.dotSel.classed("dim",   d => !!dimmedIds(d.ethId));
+}
+
+function setLinkMode(m) {
+  state.linkMode = m;
+  ["sel","all","strong"].forEach(k =>
+    document.getElementById("btn-"+k).classList.toggle("on", k===m||("selected"===m&&k==="sel")));
+  applyVisibility();
+}
+
+function setPats(v) {
+  state.showPats = v;
+  document.getElementById("btn-pon").classList.toggle("on", v);
+  document.getElementById("btn-poff").classList.toggle("on", !v);
+  if (_viz) _viz.dotSel.style("display", v?null:"none");
+}
+
+// ── PANEL: relation between two nodes ────────────────────────────────────────
+let _panelCtx = null;
+let _activeTab = "fwd";
+
+function lookupLink(srcId, tgtId) {
+  return _data.links.find(l => l.source===srcId && l.target===tgtId);
+}
+
+function openRelationPanel(id1, id2) {
+  _panelCtx = { id1, id2 };
+  _activeTab = "fwd";
+
+  const fwd = lookupLink(id1, id2);
+  const rev = lookupLink(id2, id1);
+  const isMutual = !!(fwd && rev);
+
+  document.getElementById("panel-title").textContent = `${id1}  ↔  ${id2}`;
+
+  let metaHTML = "";
+  if (!fwd && !rev) {
+    metaHTML = `<em>No recorded joking relation</em> between these two groups.`;
+  } else {
+    if (fwd) metaHTML += `<strong>${id1} → ${id2}:</strong> <em>${fwd.weight}</em> patronyme${fwd.weight>1?"s":""}<br>`;
+    if (rev) metaHTML += `<strong>${id2} → ${id1}:</strong> <em>${rev.weight}</em> patronyme${rev.weight>1?"s":""}<br>`;
+    if (isMutual) metaHTML += `<span class="mutual-badge">✓ Mutual</span>`;
+  }
+  document.getElementById("panel-meta").innerHTML = metaHTML;
+
+  document.getElementById("tab-fwd").textContent = fwd ? `→ ${id1} names ${id2} (${fwd.weight})` : `→ No forward`;
+  document.getElementById("tab-rev").textContent = rev ? `← ${id2} names ${id1} (${rev.weight})` : `← No reverse`;
+  document.getElementById("tab-fwd").classList.toggle("hidden", !fwd && !rev);
+  document.getElementById("tab-rev").classList.toggle("hidden", !rev);
+
+  if (fwd) switchTab("fwd");
+  else if (rev) switchTab("rev");
+  else { document.getElementById("panel-body").innerHTML = `<p style="padding:18px;color:var(--muted);font-size:12px">No joking relation recorded in either direction.</p>`; }
+
   document.getElementById("panel").classList.add("open");
 }
 
-function switchTab(tab) {
-  activeTab=tab;
-  ["fwd","rev"].forEach(t=>document.getElementById("tab-"+t).classList.toggle("active",t===tab));
-  if (!panelCtx) return;
-  const { id1, id2 } = panelCtx;
-  const srcId = tab==="fwd" ? id1 : id2;
-  const tgtId = tab==="fwd" ? id2 : id1;
-  const top1=topOf(srcId),top2=topOf(tgtId);
-  const link = DATA.links.find(l=>l.source===srcId&&l.target===tgtId) || DATA.links.find(l=>l.source===top1&&l.target===top2);
-  const body = document.getElementById("pb");
-  if (!link) { body.innerHTML=`<p style="padding:18px;color:var(--muted);font-size:12px">No relation in this direction.</p>`; return; }
-  const pats = link.patronymes||[];
-  if (!pats.length) { body.innerHTML=`<p style="padding:18px;color:var(--muted);font-size:12px">Weight: <strong>${link.weight}</strong> patronymes — list not available for this pair.</p>`; return; }
-  const rows = pats.map((p,i)=>`<tr><td class="num">${i+1}</td><td>${p}</td></tr>`).join("");
-  body.innerHTML=`<table class="ptable"><thead><tr><th>#</th><th>Patronyme (${srcId} → ${tgtId})</th></tr></thead><tbody>${rows}</tbody></table>`;
+function openLinkPanel(srcId, tgtId) {
+  state.sel1 = srcId; state.sel2 = tgtId;
+  updateModeBar();
+  applyVisibility();
+  openRelationPanel(srcId, tgtId);
 }
 
-function closePanel() { document.getElementById("panel").classList.remove("open"); panelCtx=null; }
+function switchTab(tab) {
+  _activeTab = tab;
+  ["fwd","rev"].forEach(t => {
+    document.getElementById("tab-"+t).classList.toggle("active", t===tab);
+  });
+  if (!_panelCtx) return;
+  const { id1, id2 } = _panelCtx;
+  const srcId = (tab==="fwd") ? id1 : id2;
+  const tgtId = (tab==="fwd") ? id2 : id1;
 
-// ─── TOOLTIPS ───
-const tip=document.getElementById("tip");
-function pos(e) {
-  const pw = document.getElementById("panel").classList.contains("open") ? 355 : 0;
-  tip.style.left=Math.min(e.clientX+14,W-pw-260)+"px";
-  tip.style.top=Math.min(e.clientY-8,H-150)+"px";
+  const link = lookupLink(srcId, tgtId);
+  const body = document.getElementById("panel-body");
+  if (!link) {
+    body.innerHTML = `<p style="padding:18px;color:var(--muted);font-size:12px">No relation in this direction.</p>`;
+    return;
+  }
+  const pats = link.patronymes || [];
+  if (pats.length === 0) {
+    body.innerHTML = `<p style="padding:18px;color:var(--muted);font-size:12px">
+      Weight: <strong>${link.weight}</strong><br><br>
+      Patronyme list not recorded for this pair.
+    </p>`;
+    return;
+  }
+  const rows = pats.map((p,i) =>
+    `<tr><td class="num">${i+1}</td><td>${p}</td></tr>`).join("");
+  body.innerHTML = `<table class="ptable">
+    <thead><tr>
+      <th>#</th>
+      <th>Patronyme of ${srcId} that names ${tgtId}</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function closePanel() {
+  document.getElementById("panel").classList.remove("open");
+  _panelCtx = null;
+}
+
+// ── TOOLTIPS ──────────────────────────────────────────────────────────────────
+const tip = document.getElementById("tip");
+function posTip(e) {
+  const panelW = document.getElementById("panel").classList.contains("open") ? 395 : 0;
+  tip.style.left = Math.min(e.clientX+14, W-panelW-260)+"px";
+  tip.style.top  = Math.min(e.clientY-8,  H-180)+"px";
 }
 function showNodeTip(e,d) {
-  const outs=DATA.links.filter(l=>l.source===d.id).length;
-  const ins=DATA.links.filter(l=>l.target===d.id).length;
-  tip.innerHTML=`<h4>${d.id}</h4><p><em>${d.count}</em> patronymes · out <em>${outs}</em> · in <em>${ins}</em></p><p class="hint">${state.sel1?"Click to pair":"Click to select"}</p>`;
-  pos(e); tip.classList.add("show");
+  const subsByParent = {};
+  _data.subgroups.forEach(s=>{ if(!subsByParent[s.parent])subsByParent[s.parent]=[]; subsByParent[s.parent].push(s.id); });
+  const subs = subsByParent[d.id] || [];
+  const outN = (_data?.links||[]).filter(l=>l.source===d.id).length;
+  const inN  = (_data?.links||[]).filter(l=>l.target===d.id).length;
+  tip.innerHTML = `<h4>${d.id}</h4>
+    <p><em>${d.count}</em> patronymes · out <em>${outN}</em> · in <em>${inN}</em></p>
+    ${subs.length?`<p>Subgroups: <em>${subs.map(s=>s.replace(/^[^(]+\(|\)$/g,'')).join(", ")}</em></p>`:""}
+    <p class="hint">${state.sel1?"Click to pair with "+state.sel1:"Click to select"}</p>`;
+  posTip(e); tip.classList.add("show");
 }
 function showSubTip(e,d) {
-  const outs=DATA.links.filter(l=>l.source===d.id).length;
-  tip.innerHTML=`<h4 class="sub">${d.id}</h4><p>Subgroup of <em>${d.parent}</em></p><p><em>${d.patronymes}</em> patronymes · out <em>${outs}</em></p><p class="hint">${state.sel1?"Click to pair":"Click to select"}</p>`;
-  pos(e); tip.classList.add("show");
+  const outN = (_data?.links||[]).filter(l=>l.source===d.id).length;
+  const inN  = (_data?.links||[]).filter(l=>l.target===d.id).length;
+  tip.innerHTML = `<h4 class="sub">${d.id}</h4>
+    <p>Subgroup of <em>${d.parent}</em></p>
+    <p><em>${d.count}</em> patronymes · out <em>${outN}</em> · in <em>${inN}</em></p>
+    <p class="hint">${state.sel1?"Click to pair with "+state.sel1:"Click to select"}</p>`;
+  posTip(e); tip.classList.add("show");
 }
-function showLinkTip(e,l) {
-  const mut=isMutual(l);
-  tip.innerHTML=`<h4>${l.source.id} → ${l.target.id}</h4><p>Weight: <em>${l.weight}</em> patronymes</p>${mut?`<p style="color:#2e7d4f;font-weight:500">✓ Mutual relation</p>`:""}<p class="hint">Click to open table</p>`;
-  pos(e); tip.classList.add("show");
+function showLinkTip(e,d) {
+  const isMut = mutualSet.has(d.source.id+"→"+d.target.id);
+  tip.innerHTML = `<h4>${d.source.id} → ${d.target.id}</h4>
+    <p>Weight: <em>${d.weight}</em> patronymes</p>
+    ${isMut?`<p style="color:var(--green);font-weight:500">✓ Mutual</p>`:""}
+    <p class="hint">Click to open table</p>`;
+  posTip(e); tip.classList.add("show");
 }
 function hideTip() { tip.classList.remove("show"); }
 </script>

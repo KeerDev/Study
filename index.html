@@ -916,6 +916,7 @@ function applyVisibility() {
     .classed("faded",   l => !(sel1&&sel2) && (linkMode==="selected"||!isActiveEthLink(l)) && !(sel1&&isActiveEthLink(l)))
     .classed("visible", l => isActiveEthLink(l))
     .style("opacity",   l => {
+      if (!showExternal && involvesExt(l.source, l.target)) return 0;     // hide ghost
       if (!isActiveEthLink(l)) return sel1 ? 0 : (linkMode==="all"||linkMode==="strong" ? 0.13 : 0);
       return 1;
     });
@@ -928,6 +929,7 @@ function applyVisibility() {
     .classed("faded",   l => !(sel1&&sel2) && (linkMode==="selected"||!isActiveSubLink(l)) && !(sel1&&isActiveSubLink(l)))
     .classed("visible", l => isActiveSubLink(l))
     .style("opacity",   l => {
+      if (!showExternal && involvesExt(l.sourceNode, l.targetNode)) return 0;
       if (!isActiveSubLink(l)) return sel1 ? 0 : (linkMode==="all"||linkMode==="strong" ? 0.18 : 0);
       return 1;
     });
